@@ -20,10 +20,15 @@ public class RegistroDeVacinacaoController {
         return registroDeVacinacaoService.criarRegistroDeVacinacao(registroDeVacinacao);
     }
 
-    @GetMapping("/{id}")
-    public RegistroDeVacinacao obterRegistroDeVacinacaoPorId(@PathVariable String id) {
-        return registroDeVacinacaoService.obterRegistroDeVacinacaoPorId(id);
+    @GetMapping("/paciente/{id}")
+    public List<RegistroDeVacinacao> obterRegistroDeVacinacaoPorIdDoPaciente(@PathVariable String id) {
+        return registroDeVacinacaoService.obterRegistroDeVacinacaoPorIdDoPaciente(id);
     }
+    @GetMapping("/vacina/{id}")
+    public List<RegistroDeVacinacao> obterRegistrosDeVacinacaoPorIdDaVacina(@PathVariable String id) {
+        return registroDeVacinacaoService.obterRegistrosDeVacinacaoPorIdDaVacina(id);
+    }
+
     @GetMapping("/lista")
     public List<RegistroDeVacinacao> obterListaRegistroDeVacinacao() {
         return registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao();

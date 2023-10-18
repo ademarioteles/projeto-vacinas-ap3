@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 
 @Document
 @Data
@@ -16,7 +17,7 @@ public class RegistroDeVacinacao {
     private String id;
     @NotNull(message = "A data de vacinação não pode estar nulo.")
     @NotEmpty(message = "A data de vacinação não pode estar vazio.")
-    private String dataDeVacinacao;
+    private LocalDate dataDeVacinacao;
     @NotNull(message = "A Identificação do paciente não pode estar nulo.")
     @NotEmpty(message = "A Identificação do paciente não pode estar vazio.")
     private String identificacaoDoPaciente; // Pode ser o ID do paciente ou outro identificador único
