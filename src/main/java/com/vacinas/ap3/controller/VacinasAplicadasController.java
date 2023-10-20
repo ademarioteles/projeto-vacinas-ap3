@@ -23,8 +23,8 @@ public class VacinasAplicadasController {
     }
 
     @GetMapping("")
-    public Integer obterQunatidadeDeVacinacao(@RequestParam(name = "estado", required = false) String estado) {
-    return registroDeVacinacaoService.obterNumeroDeVacinacao(estado);
+    public ResponseEntity <Integer> obterQunatidadeDeVacinacao(@RequestParam(name = "estado", required = false) String estado) {
+    return ResponseEntity.status(200).body(registroDeVacinacaoService.obterNumeroDeVacinacao(estado));
     }
 
 

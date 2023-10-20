@@ -1,6 +1,7 @@
 package com.vacinas.ap3.controller;
 
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,9 +14,9 @@ public class Pacientes {
     }
 
     @GetMapping("/{id}/vacinas")
-    public <Object> java.lang.Object obterRegistroResumidoDeVacinacaoPorIdDoPaciente(@PathVariable String id) {
+    public ResponseEntity<Object> obterRegistroResumidoDeVacinacaoPorIdDoPaciente(@PathVariable String id) {
 
-        return registroDeVacinacaoService.obterRegistroResumidoDeVacinacaoPorIdDoPaciente(id);
+        return ResponseEntity.status(200).body(registroDeVacinacaoService.obterRegistroResumidoDeVacinacaoPorIdDoPaciente(id));
 
     }
 }
