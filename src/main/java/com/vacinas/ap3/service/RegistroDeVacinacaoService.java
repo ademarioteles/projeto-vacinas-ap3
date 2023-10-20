@@ -1,15 +1,17 @@
 package com.vacinas.ap3.service;
 
+import com.vacinas.ap3.DTO.Endereco;
 import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.DTO.Vacina;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
 import org.springframework.stereotype.Service;
+import com.google.gson.Gson;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -116,12 +118,46 @@ public class RegistroDeVacinacaoService {
                 .collect(Collectors.toList());
     }
 
-    public List<RegistroDeVacinacao> obterRegistroDeVacinacaoPorIdDoPaciente(String id) {
-        List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao();
-
-        return listaRegistros.stream()
+    public Object obterRegistroResumidoDeVacinacaoPorIdDoPaciente(String id) {
+        Paciente paciente = interfaceAPI2Service.PacienteDaApi2(id);
+        Endereco endereco = paciente.getEndereco();
+        List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao().stream()
                 .filter(registro -> registro.getIdentificacaoDoPaciente().equals(id))
                 .collect(Collectors.toList());
+        List<Vacina> vacinas = interfaceAPI1Service.listarVacinasDaApi1();
+        Optional<Vacina> vacinaOptional = vacinas.stream()
+                .filter(vacinaFilter -> vacinaFilter.getId().equals(listaRegistros.get(0).getIdentificacaoDaVacina()))
+                .findFirst();
+        Vacina vacina = vacinaOptional.get();
+
+        Map<String, Object> dados = new HashMap<>();
+
+        Map<String, Object> jPaciente = new HashMap<>();
+        jPaciente.put("nome", paciente.getNome());
+        jPaciente.put("idade", 58);
+        jPaciente.put("bairro", endereco.getBairro());
+        jPaciente.put("municipio", endereco.getMunicipio());
+        jPaciente.put("estado", endereco.getEstado());
+
+        Map<String, Object> jVacina = new HashMap<>();
+        jVacina.put("fabricante", vacina.getFabricante());
+        jVacina.put("vacina", vacina.getNome());
+        jVacina.put("total_de_doses", vacina.getNumero_de_doses());
+        jVacina.put("intervalo_entre_doses", vacina.getIntervalo_doses());
+
+        List<String> jDoses = new ArrayList<>();
+        for (RegistroDeVacinacao registro : listaRegistros){
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            jDoses.add(registro.getDataDeVacinacao().format(formatter));
+        }
+
+        dados.put("doses", jDoses);
+        dados.put("vacina", jVacina);
+        dados.put("paciente", jPaciente);
+
+        Gson gson = new Gson();
+        String json = gson.toJson(dados);
+        return gson.fromJson(json, Object.class);
     }
 
     public Integer obterNumeroDeVacinacao(String estado) {
@@ -149,7 +185,11 @@ public class RegistroDeVacinacaoService {
         }
     }
 
-    // Requisições externas
+    public List<RegistroDeVacinacao> obterRegistroDeVacinacaoPorIdDoPaciente(String id) {
+        List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao();
 
-
+        return listaRegistros.stream()
+                .filter(registro -> registro.getIdentificacaoDoPaciente().equals(id))
+                .collect(Collectors.toList());
+    }
 }

@@ -18,4 +18,8 @@ public class InterfaceAPI2Service {
     public List<Paciente> listarPacientesDaApi2() {
         return api2Client.listarPacientes();
     }
+
+    public Paciente PacienteDaApi2(String id) {
+        return api2Client.Paciente(id);
+    }
 }

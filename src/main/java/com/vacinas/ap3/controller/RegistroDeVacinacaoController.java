@@ -24,6 +24,7 @@ public class RegistroDeVacinacaoController {
     public List<RegistroDeVacinacao> obterRegistroDeVacinacaoPorIdDoPaciente(@PathVariable String id) {
         return registroDeVacinacaoService.obterRegistroDeVacinacaoPorIdDoPaciente(id);
     }
+
     @GetMapping("/vacina/{id}")
     public List<RegistroDeVacinacao> obterRegistrosDeVacinacaoPorIdDaVacina(@PathVariable String id) {
         return registroDeVacinacaoService.obterRegistrosDeVacinacaoPorIdDaVacina(id);
