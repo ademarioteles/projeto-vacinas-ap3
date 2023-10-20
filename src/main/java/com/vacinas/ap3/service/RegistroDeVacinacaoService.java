@@ -30,55 +30,80 @@ public class RegistroDeVacinacaoService {
         List<Paciente> pacientes = interfaceAPI2Service.listarPacientesDaApi2();
         boolean pacienteExiste = pacientes.stream()
                 .anyMatch(paciente -> paciente.getId().equals(registroDeVacinacao.getIdentificacaoDoPaciente()));
+
         if (pacienteExiste) {
+            System.out.println("Passou paciente existe");
+            List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
             List<Vacina> vacinas = interfaceAPI1Service.listarVacinasDaApi1();
             boolean vacinaExiste = vacinas.stream()
                     .anyMatch(vacina -> vacina.getId().equals(registroDeVacinacao.getIdentificacaoDaVacina()));
+
             if (vacinaExiste) {
+                System.out.println("Passou maior vacina existe");
                 Vacina vacinaAplicada = null;
                 for (Vacina vacina : vacinas) {
                     if (vacina.getId().equals(registroDeVacinacao.getIdentificacaoDaVacina())) {
-                        // Se encontrarmos a vacina, retorne a quantidade de doses
                         vacinaAplicada = vacina;
                     }
                 }
                 if (registroDeVacinacao.getIdentificacaoDaDose() > vacinaAplicada.getNumero_de_doses()) {
-                    //jogar erro
+                    // Jogar erro se a dose for maior que o número de doses da vacina
+                    System.out.println("Número de dose maior que o permitido");
                     return null;
                 } else {
-                    if (registroDeVacinacao.getIdentificacaoDaDose() > 1 && registroDeVacinacao.getIdentificacaoDaDose() > 0) {
-                        List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
-                        LocalDate dataUltimaDose = LocalDate.MIN; // Inicialize com a menor data possível
-                        LocalDate dataRegistroAtual = registroDeVacinacao.getDataDeVacinacao();
-                        for (RegistroDeVacinacao registro : registros) {
-                            LocalDate dataAplicacao = registro.getDataDeVacinacao();
-                            if (dataAplicacao.isAfter(dataUltimaDose)) {
-                                dataUltimaDose = dataAplicacao;
+                    if (!registros.stream().anyMatch(registro -> registro.getIdentificacaoDaDose() == registroDeVacinacao.getIdentificacaoDaDose()) || registros.isEmpty()) {
+                        System.out.println("Passou está vazio ou a dose não é igual");
+                        System.out.println(registros);
+                        if (registroDeVacinacao.getIdentificacaoDaDose() > 1 && registroDeVacinacao.getIdentificacaoDaDose() > 0) {
+                            System.out.println("Passou maior que uma");
+                            if (registros.stream()
+                                    .anyMatch(registro -> registro.getIdentificacaoDaVacina().equals(registroDeVacinacao.getIdentificacaoDaVacina()))) {
+                                System.out.println("Passou vacina igual");
+                                LocalDate dataUltimaDose = LocalDate.MIN; // Inicialize com a menor data possível
+                                LocalDate dataRegistroAtual = registroDeVacinacao.getDataDeVacinacao();
+                                for (RegistroDeVacinacao registro : registros) {
+                                    LocalDate dataAplicacao = registro.getDataDeVacinacao();
+                                    if (dataAplicacao.isAfter(dataUltimaDose)) {
+                                        dataUltimaDose = dataAplicacao;
+                                    }
+                                }
+                                // Calcula o intervalo em dias entre a data do registro atual e a data da última dose
+                                long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
+                                if (intervaloDias >= vacinaAplicada.getIntervalo_doses()) {
+                                    return registroDeVacinacaoRepository.save(registroDeVacinacao);
+                                } else {
+                                    // Jogar erro se o intervalo não for suficiente
+                                    System.out.println("Intervalo insuficiente entre doses");
+                                    return null;
+                                }
+                            } else {
+                                // Jogar erro se a vacina não for a mesma que a do paciente
+                                System.out.println("Vacina diferente das doses anteriores");
+                                return null;
                             }
-                        }
-                        // Calcula o intervalo em dias entre a data do registro atual e a data da última dose
-                        long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
-                        if (intervaloDias >= vacinaAplicada.getIntervalo_doses()) {
-                            return registroDeVacinacaoRepository.save(registroDeVacinacao);
                         } else {
-                            return null;
+                            // Jogar erro se a dose for menor ou igual a zero
+                            System.out.println("Número de dose inválido");
+                            return registroDeVacinacaoRepository.save(registroDeVacinacao);
                         }
-
                     } else {
-                        return registroDeVacinacaoRepository.save(registroDeVacinacao);
+                        // Jogar erro se o registro de vacinação já existe
+                        System.out.println("Registro de vacinação já existe");
+                        return null;
                     }
                 }
-
             } else {
-                // O vacina não existe, jogar um erro
+                // Jogar erro se a vacina não existe
+                System.out.println("A vacina não existe");
                 return null;
             }
         } else {
-            // O paciente não existe, jogar um erro
+            // Jogar erro se o paciente não existe
+            System.out.println("O paciente não existe");
             return null;
         }
-
     }
+
 
     public List<RegistroDeVacinacao> listarTodosOsRegistrosDeVacinacao() {
         return registroDeVacinacaoRepository.findAll();
