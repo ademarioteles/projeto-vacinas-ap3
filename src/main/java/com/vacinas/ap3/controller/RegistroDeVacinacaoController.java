@@ -2,6 +2,7 @@ package com.vacinas.ap3.controller;
 
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public class RegistroDeVacinacaoController {
     }
 
     @PostMapping
-    public RegistroDeVacinacao criarRegistroDeVacinacao(@RequestBody RegistroDeVacinacao registroDeVacinacao) {
+    public ResponseEntity criarRegistroDeVacinacao(@RequestBody RegistroDeVacinacao registroDeVacinacao) {
         return registroDeVacinacaoService.criarRegistroDeVacinacao(registroDeVacinacao);
     }
 
