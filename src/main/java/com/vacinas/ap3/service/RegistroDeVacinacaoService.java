@@ -31,90 +31,78 @@ public class RegistroDeVacinacaoService {
         this.interfaceAPI2Service = interfaceAPI2Service;
         this.interfaceAPI1Service = interfaceAPI1Service;
     }
-
-    public ResponseEntity criarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao) {
+    private void validarPacienteExistente(String identificacaoDoPaciente) {
         List<Paciente> pacientes = interfaceAPI2Service.listarPacientesDaApi2();
         boolean pacienteExiste = pacientes.stream()
-                .anyMatch(paciente -> paciente.getId().equals(registroDeVacinacao.getIdentificacaoDoPaciente()));
-
-        if (pacienteExiste) {
-            System.out.println("Passou paciente existe");
-            List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
-            List<Vacina> vacinas = interfaceAPI1Service.listarVacinasDaApi1();
-            boolean vacinaExiste = vacinas.stream()
-                    .anyMatch(vacina -> vacina.getId().equals(registroDeVacinacao.getIdentificacaoDaVacina()));
-
-            if (vacinaExiste) {
-                System.out.println("Passou maior vacina existe");
-                Vacina vacinaAplicada = null;
-                for (Vacina vacina : vacinas) {
-                    if (vacina.getId().equals(registroDeVacinacao.getIdentificacaoDaVacina())) {
-                        vacinaAplicada = vacina;
-                    }
-                }
-                if (registroDeVacinacao.getIdentificacaoDaDose() > vacinaAplicada.getNumero_de_doses()) {
-                    // Jogar erro se a dose for maior que o número de doses da vacina
-                    System.out.println("Número de dose maior que o permitido");
-                    throw new DoseMaiorException("Número de dose maior que o permitido");
-                } else {
-                    if (!registros.stream().anyMatch(registro -> registro.getIdentificacaoDaDose() == registroDeVacinacao.getIdentificacaoDaDose()) || registros.isEmpty()) {
-                        System.out.println("Passou está vazio ou a dose não é igual");
-                        System.out.println(registros);
-                        if (registroDeVacinacao.getIdentificacaoDaDose() > 1 && registroDeVacinacao.getIdentificacaoDaDose() > 0) {
-                            System.out.println("Passou maior que uma");
-                            if (registros.stream()
-                                    .anyMatch(registro -> registro.getIdentificacaoDaVacina().equals(registroDeVacinacao.getIdentificacaoDaVacina()))) {
-                                System.out.println("Passou vacina igual");
-                                LocalDate dataUltimaDose = LocalDate.MIN; // Inicialize com a menor data possível
-                                LocalDate dataRegistroAtual = registroDeVacinacao.getDataDeVacinacao();
-                                for (RegistroDeVacinacao registro : registros) {
-                                    LocalDate dataAplicacao = registro.getDataDeVacinacao();
-                                    if (dataAplicacao.isAfter(dataUltimaDose)) {
-                                        dataUltimaDose = dataAplicacao;
-                                    }
-                                }
-                                // Calcula o intervalo em dias entre a data do registro atual e a data da última dose
-                                long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
-                                if (intervaloDias >= vacinaAplicada.getIntervalo_doses()) {
-                                    registroDeVacinacaoRepository.save(registroDeVacinacao);
-                                    return ResponseEntity.status(HttpStatus.CREATED)
-                                            .contentType(MediaType.APPLICATION_JSON)
-                                            .body(new Mensagem("Registro cadastrado com sucesso!"));
-
-                                } else {
-                                    // Jogar erro se o intervalo não for suficiente
-                                    System.out.println("Intervalo insuficiente entre doses");
-                                    throw new IntervaloInsuficienteException("Intervalo insuficiente entre doses");
-                                }
-                            } else {
-                                // Jogar erro se a vacina não for a mesma que a do paciente
-                                System.out.println("Vacina diferente das doses anteriores");
-                                throw new VacinaIncompativelException("Vacina diferente das doses anteriores");
-                            }
-                        } else {
-                            registroDeVacinacaoRepository.save(registroDeVacinacao);
-                            return ResponseEntity.status(HttpStatus.CREATED)
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .body(new Mensagem("Registro cadastrado com sucesso!"));
-                        }
-                    } else {
-                        // Jogar erro se o registro de vacinação já existe
-                        System.out.println("Registro de vacinação já existe");
-                        throw new RegistroExistenteException("Registro de vacinação já existe");
-                    }
-                }
-            } else {
-                // Jogar erro se a vacina não existe
-                System.out.println("A vacina não existe");
-                throw new VacinaInexistenteException("A vacina não encontrada");
-            }
-        } else {
-            // Jogar erro se o paciente não existe
-            System.out.println("O paciente não existe");
+                .anyMatch(paciente -> paciente.getId().equals(identificacaoDoPaciente));
+        if (!pacienteExiste) {
             throw new PacienteInexistenteException("Paciente não encontrado");
         }
     }
 
+    private void validarVacinaExistente(String identificacaoDaVacina) {
+        List<Vacina> vacinas = interfaceAPI1Service.listarVacinasDaApi1();
+        boolean vacinaExiste = vacinas.stream()
+                .anyMatch(vacina -> vacina.getId().equals(identificacaoDaVacina));
+        if (!vacinaExiste) {
+            throw new VacinaInexistenteException("A vacina não encontrada");
+        }
+    }
+
+    private void validarDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
+        List<Vacina> vacinas = interfaceAPI1Service.listarVacinasDaApi1();
+        for (RegistroDeVacinacao registroExistente : registros) {
+            if (registroExistente.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose()) {
+                throw new RegistroExistenteException("Registro de vacinação já existe");
+            }
+        }
+
+        Vacina vacinaAplicada = vacinas.stream()
+                .filter(vacina -> vacina.getId().equals(registro.getIdentificacaoDaVacina()))
+                .findFirst()
+                .orElseThrow(() -> new VacinaInexistenteException("A vacina não encontrada"));
+
+        if (registro.getIdentificacaoDaDose() > vacinaAplicada.getNumero_de_doses()) {
+            throw new DoseMaiorException("Número de dose maior que o permitido");
+        }
+
+        LocalDate dataUltimaDose = registros.stream()
+                .map(RegistroDeVacinacao::getDataDeVacinacao)
+                .max(Comparator.naturalOrder())
+                .orElse(LocalDate.MIN);
+
+        LocalDate dataRegistroAtual = registro.getDataDeVacinacao();
+        long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
+
+        if (intervaloDias < vacinaAplicada.getIntervalo_doses()) {
+            throw new IntervaloInsuficienteException("Intervalo insuficiente entre doses");
+        }
+        if (!registro.getIdentificacaoDaVacina().equals(registros.get(0).getIdentificacaoDaVacina())) {
+            throw new VacinaIncompativelException("Vacina diferente das doses anteriores");
+        }
+    }
+
+    public ResponseEntity criarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao) {
+        try {
+            validarPacienteExistente(registroDeVacinacao.getIdentificacaoDoPaciente());
+            validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
+
+            List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
+            validarDose(registroDeVacinacao, registros);
+
+            registroDeVacinacaoRepository.save(registroDeVacinacao);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new Mensagem("Registro cadastrado com sucesso!"));
+        } catch (PacienteInexistenteException | VacinaInexistenteException | DoseMaiorException |
+                 RegistroExistenteException | VacinaIncompativelException | IntervaloInsuficienteException e) {
+            // Lidar com exceções
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new Mensagem("Erro: " + e.getMessage()));
+        }
+    }
 
     public List<RegistroDeVacinacao> listarTodosOsRegistrosDeVacinacao() {
         return registroDeVacinacaoRepository.findAll();
