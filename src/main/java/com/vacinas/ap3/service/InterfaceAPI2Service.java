@@ -21,7 +21,8 @@ public class InterfaceAPI2Service {
     public ResponseEntity <List<Paciente>> listarPacientesDaApi2() {
         return api2Client.listarPacientes();
     }
-    public Object PacienteDaApi2(String id) {
+    @ResponseBody
+    public ResponseEntity PacienteDaApi2(String id) {
         return api2Client.Paciente(id);
     }
 }

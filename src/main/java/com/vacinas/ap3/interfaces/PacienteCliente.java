@@ -15,5 +15,5 @@ public interface PacienteCliente {
     ResponseEntity<List<Paciente>> listarPacientes();
 
     @GetMapping("/pacientes/{id}")
-    Object Paciente(@PathVariable String id);
+    ResponseEntity Paciente(@PathVariable String id);
 }

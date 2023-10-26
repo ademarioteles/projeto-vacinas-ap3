@@ -39,6 +39,13 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
         return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(OrdemDoseInvalidaException.class)
+    protected ResponseEntity handleException(OrdemDoseInvalidaException e) {
+        Mensagem mensagem = new Mensagem("Ordem de Vacinação Invalida");
+        LOGGER.info("Tratamentação de exceção OrdemDoseInvalidaException: " + mensagem);
+        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(VacinaInexistenteException.class)
     protected ResponseEntity handleException(VacinaInexistenteException e) {
         Mensagem mensagem = new Mensagem("Vacina não encontrado");

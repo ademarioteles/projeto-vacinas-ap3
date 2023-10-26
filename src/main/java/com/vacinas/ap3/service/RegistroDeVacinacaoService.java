@@ -1,7 +1,9 @@
 package com.vacinas.ap3.service;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 import com.vacinas.ap3.DTO.Endereco;
 import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.DTO.Vacina;
@@ -35,23 +37,13 @@ public class RegistroDeVacinacaoService {
         this.interfaceAPI2Service = interfaceAPI2Service;
         this.interfaceAPI1Service = interfaceAPI1Service;
     }
-    private void validarPacienteExistente(String identificacaoDoPaciente) {
-        Response response;
-       // try {
-            response = (Response) interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente);
-            System.out.println(response.status());
-            ResponseEntity <Object>  reposta = (ResponseEntity) interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente);
-            System.out.println(reposta);
-      /*  } catch (FeignException e) {
-            // Use regex para extrair a parte JSON da string
-            String jsonPart = e.getMessage().replaceAll(".*?\\[.*?\\]: ", "");
-            // Parse o JSON
-            JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
 
-            // Acesse a mensagem
-            String mensagem = jsonObject.get("messagem").getAsString();
-                throw new ExteriorException("aaaaa");
-        } */
+    private void validarPacienteExistente(String identificacaoDoPaciente) {
+        try {
+            ResponseEntity response = interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente);
+        } catch (FeignException e) {
+            throw new ExteriorException("Paciente não encontrado");
+        }
     }
 
     private void validarVacinaExistente(String identificacaoDaVacina) {
@@ -65,9 +57,18 @@ public class RegistroDeVacinacaoService {
 
     private void validarDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
         List<Vacina> vacinas = interfaceAPI1Service.listarVacinasDaApi1();
+        if (registros.isEmpty()) {
+            // Se a lista de registros estiver vazia, a dose cadastrada deve ser a primeira.
+            if (registro.getIdentificacaoDaDose() != 1) {
+                throw new OrdemDoseInvalidaException("Nenhum registro de vacinação encontrado, essa dose deverá ser a primeira");
+            }else {
+                return;
+            }
+        }
+
         for (RegistroDeVacinacao registroExistente : registros) {
             if (registroExistente.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose()) {
-                throw new RegistroExistenteException("Registro de vacinação já existe");
+                throw new RegistroExistenteException("Registro de vacinação já existe.");
             }
         }
 
@@ -77,7 +78,7 @@ public class RegistroDeVacinacaoService {
                 .orElseThrow(() -> new VacinaInexistenteException("A vacina não encontrada"));
 
         if (registro.getIdentificacaoDaDose() > vacinaAplicada.getNumero_de_doses()) {
-            throw new DoseMaiorException("Número de dose maior que o permitido");
+            throw new DoseMaiorException("Número de dose maior que o permitido.");
         }
 
         LocalDate dataUltimaDose = registros.stream()
@@ -88,19 +89,30 @@ public class RegistroDeVacinacaoService {
         LocalDate dataRegistroAtual = registro.getDataDeVacinacao();
         long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
 
-      /*  if (intervaloDias < vacinaAplicada.getIntervalo_doses()) {
-            throw new IntervaloInsuficienteException("Intervalo insuficiente entre doses");
+        if (intervaloDias < vacinaAplicada.getIntervalo_doses()) {
+            throw new IntervaloInsuficienteException("Intervalo insuficiente entre doses.");
+        } else {
+            // Verifique se a ordem das doses é crescente
+            int doseAnterior = registros.isEmpty() ? 0 : registros.get(registros.size() - 1).getIdentificacaoDaDose();
+            System.out.println(doseAnterior);
+            int novaDose = registro.getIdentificacaoDaDose();
+
+            if (novaDose != doseAnterior + 1) {
+                System.out.println(novaDose);
+                throw new OrdemDoseInvalidaException("Ordem de Vacinação Inválida");
+            }
+
         }
         if (!registro.getIdentificacaoDaVacina().equals(registros.get(0).getIdentificacaoDaVacina())) {
-            throw new VacinaIncompativelException("Vacina diferente das doses anteriores");
-        }*/
+            throw new VacinaIncompativelException("Vacina diferente das doses anteriores.");
+        }
     }
+
 
     public ResponseEntity criarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao) {
         try {
             validarPacienteExistente(registroDeVacinacao.getIdentificacaoDoPaciente());
             validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
-
             List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
             validarDose(registroDeVacinacao, registros);
 
@@ -110,11 +122,12 @@ public class RegistroDeVacinacaoService {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(new Mensagem("Registro cadastrado com sucesso!"));
         } catch (PacienteInexistenteException | VacinaInexistenteException | DoseMaiorException |
-                 RegistroExistenteException | VacinaIncompativelException | IntervaloInsuficienteException e) {
+                 RegistroExistenteException | VacinaIncompativelException | IntervaloInsuficienteException |
+                 ExteriorException e) {
             // Lidar com exceções
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Mensagem("Erro: " + e.getMessage()));
+                    .body(new Mensagem(e.getMessage()));
         }
     }
 
@@ -130,8 +143,8 @@ public class RegistroDeVacinacaoService {
     }
 
     public Object obterRegistroResumidoDeVacinacaoPorIdDoPaciente(String id) {
-        Response pacienteResponse = (Response) interfaceAPI2Service.PacienteDaApi2(id);
-        Paciente paciente = (Paciente) pacienteResponse.body();
+        ResponseEntity pacienteResponse = interfaceAPI2Service.PacienteDaApi2(id);
+        Paciente paciente = (Paciente) pacienteResponse.getBody();
         Endereco endereco = paciente.getEndereco();
         List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao().stream()
                 .filter(registro -> registro.getIdentificacaoDoPaciente().equals(id))
@@ -158,7 +171,7 @@ public class RegistroDeVacinacaoService {
         jVacina.put("intervalo_entre_doses", vacina.getIntervalo_doses());
 
         List<String> jDoses = new ArrayList<>();
-        for (RegistroDeVacinacao registro : listaRegistros){
+        for (RegistroDeVacinacao registro : listaRegistros) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             jDoses.add(registro.getDataDeVacinacao().format(formatter));
         }
