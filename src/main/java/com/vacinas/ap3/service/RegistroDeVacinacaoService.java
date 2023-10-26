@@ -1,5 +1,7 @@
 package com.vacinas.ap3.service;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.vacinas.ap3.DTO.Endereco;
 import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.DTO.Vacina;
@@ -7,6 +9,8 @@ import com.vacinas.ap3.entity.Mensagem;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
+import feign.FeignException;
+import feign.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,12 +36,22 @@ public class RegistroDeVacinacaoService {
         this.interfaceAPI1Service = interfaceAPI1Service;
     }
     private void validarPacienteExistente(String identificacaoDoPaciente) {
-        List<Paciente> pacientes = interfaceAPI2Service.listarPacientesDaApi2();
-        boolean pacienteExiste = pacientes.stream()
-                .anyMatch(paciente -> paciente.getId().equals(identificacaoDoPaciente));
-        if (!pacienteExiste) {
-            throw new PacienteInexistenteException("Paciente não encontrado");
-        }
+        Response response;
+       // try {
+            response = (Response) interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente);
+            System.out.println(response.status());
+            ResponseEntity <Object>  reposta = (ResponseEntity) interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente);
+            System.out.println(reposta);
+      /*  } catch (FeignException e) {
+            // Use regex para extrair a parte JSON da string
+            String jsonPart = e.getMessage().replaceAll(".*?\\[.*?\\]: ", "");
+            // Parse o JSON
+            JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
+
+            // Acesse a mensagem
+            String mensagem = jsonObject.get("messagem").getAsString();
+                throw new ExteriorException("aaaaa");
+        } */
     }
 
     private void validarVacinaExistente(String identificacaoDaVacina) {
@@ -74,12 +88,12 @@ public class RegistroDeVacinacaoService {
         LocalDate dataRegistroAtual = registro.getDataDeVacinacao();
         long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
 
-        if (intervaloDias < vacinaAplicada.getIntervalo_doses()) {
+      /*  if (intervaloDias < vacinaAplicada.getIntervalo_doses()) {
             throw new IntervaloInsuficienteException("Intervalo insuficiente entre doses");
         }
         if (!registro.getIdentificacaoDaVacina().equals(registros.get(0).getIdentificacaoDaVacina())) {
             throw new VacinaIncompativelException("Vacina diferente das doses anteriores");
-        }
+        }*/
     }
 
     public ResponseEntity criarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao) {
@@ -116,7 +130,8 @@ public class RegistroDeVacinacaoService {
     }
 
     public Object obterRegistroResumidoDeVacinacaoPorIdDoPaciente(String id) {
-        Paciente paciente = interfaceAPI2Service.PacienteDaApi2(id);
+        Response pacienteResponse = (Response) interfaceAPI2Service.PacienteDaApi2(id);
+        Paciente paciente = (Paciente) pacienteResponse.body();
         Endereco endereco = paciente.getEndereco();
         List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao().stream()
                 .filter(registro -> registro.getIdentificacaoDoPaciente().equals(id))
@@ -160,7 +175,8 @@ public class RegistroDeVacinacaoService {
     public Integer obterNumeroDeVacinacao(String estado) {
         if (estado != null) {
             // Se o parâmetro "estado" estiver presente, retorne o total de vacinas aplicadas para esse estado
-            List<Paciente> pacientes = interfaceAPI2Service.listarPacientesDaApi2();
+            ResponseEntity pacientesResponse = interfaceAPI2Service.listarPacientesDaApi2();
+            List<Paciente> pacientes = (List<Paciente>) pacientesResponse.getBody();
             List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao();
             Map<String, Long> pacienteParaQuantidade = listaRegistros.stream()
                     .collect(Collectors.groupingBy(RegistroDeVacinacao::getIdentificacaoDoPaciente, Collectors.counting()));

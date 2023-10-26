@@ -20,6 +20,12 @@ import java.util.List;
 public class GenericHandlerException extends ResponseEntityExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericHandlerException.class);
 
+    @ExceptionHandler(ExteriorException.class)
+    protected ResponseEntity handleException(ExteriorException e) {
+        Mensagem mensagem = new Mensagem("exceção externa!");
+        LOGGER.info("Tratamentação de exceção externa: " + mensagem);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler(RegistroExistenteException.class)
     protected ResponseEntity handleException(RegistroExistenteException e) {
         Mensagem mensagem = new Mensagem("O registro de vacinacão já encontra-se cadastrado em nossa base de dados!");

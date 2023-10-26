@@ -1,8 +1,11 @@
 package com.vacinas.ap3.service;
 import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.interfaces.PacienteCliente;
+import feign.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
@@ -14,12 +17,11 @@ public class InterfaceAPI2Service {
     public InterfaceAPI2Service(PacienteCliente api2Client) {
         this.api2Client = api2Client;
     }
-
-    public List<Paciente> listarPacientesDaApi2() {
+    @ResponseBody
+    public ResponseEntity <List<Paciente>> listarPacientesDaApi2() {
         return api2Client.listarPacientes();
     }
-
-    public Paciente PacienteDaApi2(String id) {
+    public Object PacienteDaApi2(String id) {
         return api2Client.Paciente(id);
     }
 }
