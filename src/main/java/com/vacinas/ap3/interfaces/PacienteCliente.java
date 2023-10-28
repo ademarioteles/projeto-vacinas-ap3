@@ -12,8 +12,8 @@ import java.util.List;
 public interface PacienteCliente {
 
     @GetMapping("/pacientes")
-    ResponseEntity<List<Paciente>> listarPacientes();
+    ResponseEntity <List<Paciente>> listarPacientes();
 
     @GetMapping("/pacientes/{id}")
-    ResponseEntity Paciente(@PathVariable String id);
+    ResponseEntity <Paciente> Paciente(@PathVariable String id);
 }

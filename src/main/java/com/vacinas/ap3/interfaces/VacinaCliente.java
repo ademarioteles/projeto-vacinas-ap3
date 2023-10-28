@@ -15,5 +15,5 @@ public interface VacinaCliente {
     ResponseEntity <List<Vacina>> listarVacinas();
 
     @GetMapping("/vacinas/{id}")
-    ResponseEntity vacina(@PathVariable String id);
+    ResponseEntity <Vacina> vacina(@PathVariable String id);
 }

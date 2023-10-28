@@ -22,54 +22,47 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ExteriorException.class)
     protected ResponseEntity handleException(ExteriorException e) {
-        Mensagem mensagem = new Mensagem("exceção externa!");
+        Mensagem mensagem = new Mensagem(e.getMessage());
+        LOGGER.info("Tratamentação de exceção externa: " + mensagem);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(DataBaseException.class)
+    protected ResponseEntity handleException(DataBaseException e) {
+        Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção externa: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler(RegistroExistenteException.class)
     protected ResponseEntity handleException(RegistroExistenteException e) {
-        Mensagem mensagem = new Mensagem("O registro de vacinacão já encontra-se cadastrado em nossa base de dados!");
+        Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção RegistroExistenteException: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
-    }
-    @ExceptionHandler(PacienteInexistenteException.class)
-    protected ResponseEntity handleException(PacienteInexistenteException e) {
-        Mensagem mensagem = new Mensagem("Paciente não encontrado");
-        LOGGER.info("Tratamentação de exceção PacienteInexistenteException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(OrdemDoseInvalidaException.class)
     protected ResponseEntity handleException(OrdemDoseInvalidaException e) {
-        Mensagem mensagem = new Mensagem("Ordem de Vacinação Invalida");
+        Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção OrdemDoseInvalidaException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(VacinaInexistenteException.class)
-    protected ResponseEntity handleException(VacinaInexistenteException e) {
-        Mensagem mensagem = new Mensagem("Vacina não encontrado");
-        LOGGER.info("Tratamentação de exceção VacinaInexistenteException: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(IntervaloInsuficienteException.class)
     protected ResponseEntity handleException(IntervaloInsuficienteException e) {
-        Mensagem mensagem = new Mensagem("Intervalo de vacinação insuficiente");
+        Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção IntervaloInsuficienteException: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(VacinaIncompativelException.class)
     protected ResponseEntity handleException(VacinaIncompativelException e) {
-        Mensagem mensagem = new Mensagem("Vacina incompatível com registros anteriores");
+        Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção VacinaIncompativelException: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(DoseMaiorException.class)
     protected ResponseEntity handleException(DoseMaiorException e) {
-        Mensagem mensagem = new Mensagem("Dose maior que permitido");
+        Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção DoseMaiorException: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }

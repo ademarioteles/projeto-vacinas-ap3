@@ -1,9 +1,5 @@
 package com.vacinas.ap3.service;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 import com.vacinas.ap3.DTO.Endereco;
 import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.DTO.Vacina;
@@ -12,8 +8,7 @@ import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
 import feign.FeignException;
-import feign.Response;
-import org.aspectj.apache.bcel.generic.ReturnaddressType;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,67 +36,100 @@ public class RegistroDeVacinacaoService {
 
     private Paciente validarPacienteExistente(String identificacaoDoPaciente) {
         try {
-            ResponseEntity response = interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente);
-            return (Paciente) response.getBody();
+            ResponseEntity<Paciente> response = interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody(); // Paciente encontrado na API externa
+            } else {
+                throw new ExteriorException("Paciente não encontrado na API externa");
+            }
         } catch (FeignException e) {
-            throw new ExteriorException("Paciente não encontrado");
+            throw new ExteriorException("Erro ao buscar paciente na API externa");
+        }
+    }
+
+    private List<Paciente> validarListaPacientes() {
+        try {
+            ResponseEntity <List<Paciente>> response = interfaceAPI2Service.listarPacientesDaApi2();
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody(); // Paciente encontrado na API externa
+            } else {
+                throw new ExteriorException("Paciente não encontrado na API externa");
+            }
+        } catch (FeignException e) {
+            throw new ExteriorException("Erro ao buscar paciente na API externa");
         }
     }
 
     private Vacina validarVacinaExistente(String identificacaoDaVacina) {
         try {
-            ResponseEntity response = interfaceAPI1Service.buscarVacinaDaApi1(identificacaoDaVacina);
-            return (Vacina) response.getBody();
+            ResponseEntity <Vacina> response = interfaceAPI1Service.buscarVacinaDaApi1(identificacaoDaVacina);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody(); // Paciente encontrado na API externa
+            } else {
+                throw new ExteriorException("Vacina não encontrado na API externa");
+            }
         } catch (FeignException e) {
-            throw new ExteriorException("Vacina não encontrado");
+            throw new ExteriorException("Erro ao buscar Vacina na API externa");
         }
     }
 
 
     private void validarDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
         if (registros.isEmpty()) {
-            // Se a lista de registros estiver vazia, a dose cadastrada deve ser a primeira.
-            if (registro.getIdentificacaoDaDose() != 1) {
-                throw new OrdemDoseInvalidaException("Nenhum registro de vacinação encontrado, essa dose deverá ser a primeira");
-            }else {
-                return;
-            }
+            validarPrimeiraDose(registro);
+            return;
         }
 
+        validarDoseExistente(registro, registros);
+        Vacina vacinaAplicada = validarVacinaExistente(registro.getIdentificacaoDaVacina());
+
+        LocalDate dataUltimaDose = obterDataUltimaDose(registros);
+        LocalDate dataRegistroAtual = registro.getDataDeVacinacao();
+        validarIntervaloDoses(dataUltimaDose, dataRegistroAtual, vacinaAplicada);
+
+        validarOrdemDose(registro, registros);
+
+        validarVacinaIncompativel(registro, registros);
+    }
+
+    private void validarPrimeiraDose(RegistroDeVacinacao registro) {
+        if (registro.getIdentificacaoDaDose() != 1) {
+            throw new OrdemDoseInvalidaException("Nenhum registro de vacinação encontrado, essa dose deverá ser a primeira");
+        }
+    }
+
+    private void validarDoseExistente(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
         for (RegistroDeVacinacao registroExistente : registros) {
             if (registroExistente.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose()) {
                 throw new RegistroExistenteException("Registro de vacinação já existe.");
             }
         }
+    }
 
-        Vacina vacinaAplicada = validarVacinaExistente(registro.getIdentificacaoDaVacina());
-
-        if (registro.getIdentificacaoDaDose() > vacinaAplicada.getNumero_de_doses()) {
-            throw new DoseMaiorException("Número de dose maior que o permitido.");
-        }
-
-        LocalDate dataUltimaDose = registros.stream()
+    private LocalDate obterDataUltimaDose(List<RegistroDeVacinacao> registros) {
+        return registros.stream()
                 .map(RegistroDeVacinacao::getDataDeVacinacao)
                 .max(Comparator.naturalOrder())
                 .orElse(LocalDate.MIN);
+    }
 
-        LocalDate dataRegistroAtual = registro.getDataDeVacinacao();
+    private void validarIntervaloDoses(LocalDate dataUltimaDose, LocalDate dataRegistroAtual, Vacina vacinaAplicada) {
         long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
-
         if (intervaloDias < vacinaAplicada.getIntervalo_doses()) {
             throw new IntervaloInsuficienteException("Intervalo insuficiente entre doses.");
-        } else {
-            // Verifique se a ordem das doses é crescente
-            int doseAnterior = registros.isEmpty() ? 0 : registros.get(registros.size() - 1).getIdentificacaoDaDose();
-            System.out.println(doseAnterior);
-            int novaDose = registro.getIdentificacaoDaDose();
-
-            if (novaDose != doseAnterior + 1) {
-                System.out.println(novaDose);
-                throw new OrdemDoseInvalidaException("Ordem de Vacinação Inválida");
-            }
-
         }
+    }
+
+    private void validarOrdemDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
+        int doseAnterior = registros.isEmpty() ? 0 : registros.get(registros.size() - 1).getIdentificacaoDaDose();
+        int novaDose = registro.getIdentificacaoDaDose();
+
+        if (novaDose != doseAnterior + 1) {
+            throw new OrdemDoseInvalidaException("Ordem de Vacinação Inválida");
+        }
+    }
+
+    private void validarVacinaIncompativel(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
         if (!registro.getIdentificacaoDaVacina().equals(registros.get(0).getIdentificacaoDaVacina())) {
             throw new VacinaIncompativelException("Vacina diferente das doses anteriores.");
         }
@@ -114,15 +142,13 @@ public class RegistroDeVacinacaoService {
             validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
             List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
             validarDose(registroDeVacinacao, registros);
-
             registroDeVacinacaoRepository.save(registroDeVacinacao);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(new Mensagem("Registro cadastrado com sucesso!"));
-        } catch (PacienteInexistenteException | VacinaInexistenteException | DoseMaiorException |
-                 RegistroExistenteException | VacinaIncompativelException | IntervaloInsuficienteException |
-                 ExteriorException e) {
+        } catch (DoseMaiorException | RegistroExistenteException | VacinaIncompativelException | IntervaloInsuficienteException |
+                 ExteriorException | DataBaseException e) {
             // Lidar com exceções
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -131,7 +157,15 @@ public class RegistroDeVacinacaoService {
     }
 
     public List<RegistroDeVacinacao> listarTodosOsRegistrosDeVacinacao() {
-        return registroDeVacinacaoRepository.findAll();
+        try {
+            List<RegistroDeVacinacao> lista = registroDeVacinacaoRepository.findAll();
+            if(!lista.isEmpty()){
+                return lista;
+            }
+            throw new DataBaseException("Não há registros de vacinação válidos");
+        } catch (DataAccessException ex) {
+            throw new DataBaseException("Erro ao listar registros de vacinação");
+        }
     }
 
     public List<RegistroDeVacinacao> obterRegistrosDeVacinacaoPorIdDaVacina(String id) {
@@ -142,8 +176,8 @@ public class RegistroDeVacinacaoService {
     }
 
     public Object obterRegistroResumidoDeVacinacaoPorIdDoPaciente(String id) {
-        ResponseEntity pacienteResponse = interfaceAPI2Service.PacienteDaApi2(id);
-        Paciente paciente = (Paciente) pacienteResponse.getBody();
+        Paciente paciente = validarPacienteExistente(id);
+        System.out.println(paciente);
         Endereco endereco = paciente.getEndereco();
         List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao().stream()
                 .filter(registro -> registro.getIdentificacaoDoPaciente().equals(id))
@@ -176,14 +210,12 @@ public class RegistroDeVacinacaoService {
 
         Gson gson = new Gson();
         String json = gson.toJson(dados);
-        return gson.fromJson(json, Object.class);
+        return json;
     }
 
     public Integer obterNumeroDeVacinacao(String estado) {
         if (estado != null) {
-            // Se o parâmetro "estado" estiver presente, retorne o total de vacinas aplicadas para esse estado
-            ResponseEntity pacientesResponse = interfaceAPI2Service.listarPacientesDaApi2();
-            List<Paciente> pacientes = (List<Paciente>) pacientesResponse.getBody();
+            List<Paciente> pacientes = validarListaPacientes();
             List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao();
             Map<String, Long> pacienteParaQuantidade = listaRegistros.stream()
                     .collect(Collectors.groupingBy(RegistroDeVacinacao::getIdentificacaoDoPaciente, Collectors.counting()));

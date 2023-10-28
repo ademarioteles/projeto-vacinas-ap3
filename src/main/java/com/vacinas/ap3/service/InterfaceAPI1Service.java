@@ -16,7 +16,7 @@ public class InterfaceAPI1Service {
         this.api1Client = api1Client;
     }
 
-    public ResponseEntity<List<Vacina>> listarVacinasDaApi1() {
+    public ResponseEntity <List<Vacina>> listarVacinasDaApi1() {
         return api1Client.listarVacinas();
     }
 

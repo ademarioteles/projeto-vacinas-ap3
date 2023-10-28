@@ -2,11 +2,11 @@ package com.vacinas.ap3.exceptions;
 
 import java.io.Serial;
 
-public class VacinaInexistenteException extends RuntimeException {
+public class DataBaseException extends RuntimeException {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public VacinaInexistenteException(String mensagem) {
+    public DataBaseException(String mensagem) {
         super(mensagem);
     }
 }

@@ -1,17 +1,8 @@
 package com.vacinas.ap3.controller;
 
-import com.vacinas.ap3.DTO.Paciente;
-import com.vacinas.ap3.entity.RegistroDeVacinacao;
-import com.vacinas.ap3.exceptions.PacienteInexistenteException;
-import com.vacinas.ap3.exceptions.RegistroExistenteException;
 import com.vacinas.ap3.service.InterfaceAPI2Service;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/pacientes")
@@ -25,7 +16,7 @@ public class Pacientes {
     }
 
     @GetMapping("/{id}/vacinas")
-    public <Object> java.lang.Object obterRegistroResumidoDeVacinacaoPorIdDoPaciente(@PathVariable String id) {
+    public Object obterRegistroResumidoDeVacinacaoPorIdDoPaciente(@PathVariable String id) {
             return registroDeVacinacaoService.obterRegistroResumidoDeVacinacaoPorIdDoPaciente(id);
     }
 
