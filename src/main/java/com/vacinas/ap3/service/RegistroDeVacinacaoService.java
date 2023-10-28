@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -173,8 +174,9 @@ public class RegistroDeVacinacaoService {
         Vacina vacina = validarVacinaExistente(listaRegistros.get(0).getIdentificacaoDaVacina());
         RegistroDeVacinacaoResumido registroResumido = new RegistroDeVacinacaoResumido();
 
+
         registroResumido.setNome(paciente.getNome());
-        registroResumido.setIdade(58); // calcular idade
+        registroResumido.setIdade(calculoIdade(paciente.getDataNascimento()));
         registroResumido.setBairro(endereco.getBairro());
         registroResumido.setMunicipio(endereco.getMunicipio());
         registroResumido.setEstado(endereco.getEstado());
@@ -191,6 +193,17 @@ public class RegistroDeVacinacaoService {
         registroResumido.setDoses(Doses);
 
         return registroResumido;
+    }
+    private Integer calculoIdade(String dataDeNascimento){
+        // Formato da data (ano-mês-dia)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        // Converter a string em um LocalDate
+        LocalDate dataNascimento = LocalDate.parse(dataDeNascimento, formatter);
+        // Calcular a idade
+        LocalDate dataAtual = LocalDate.now();
+        int idade = Period.between(dataNascimento, dataAtual).getYears();
+
+        return idade;
     }
 
     public Integer obterNumeroDeVacinacao(String estado) {
