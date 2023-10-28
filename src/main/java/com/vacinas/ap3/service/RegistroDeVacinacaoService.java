@@ -169,10 +169,15 @@ public class RegistroDeVacinacaoService {
     }
 
     public List<RegistroDeVacinacao> obterRegistrosDeVacinacaoPorIdDaVacina(String id) {
-        List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao();
-        return listaRegistros.stream()
-                .filter(registro -> registro.getIdentificacaoDaVacina().equals(id))
-                .collect(Collectors.toList());
+        try {
+            List<RegistroDeVacinacao> lista = registroDeVacinacaoRepository.findByIdentificacaoDaVacina(id);
+            if(!lista.isEmpty()){
+                return lista;
+            }
+            throw new DataBaseException("Não há registros de vacinação válidos");
+        } catch (DataAccessException ex) {
+            throw new DataBaseException("Erro ao listar registros de vacinação");
+        }
     }
 
     public Object obterRegistroResumidoDeVacinacaoPorIdDoPaciente(String id) {
@@ -238,10 +243,14 @@ public class RegistroDeVacinacaoService {
     }
 
     public List<RegistroDeVacinacao> obterRegistroDeVacinacaoPorIdDoPaciente(String id) {
-        List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao();
-
-        return listaRegistros.stream()
-                .filter(registro -> registro.getIdentificacaoDoPaciente().equals(id))
-                .collect(Collectors.toList());
+        try {
+            List<RegistroDeVacinacao> lista = registroDeVacinacaoRepository.findByIdentificacaoDoPaciente(id);
+            if(!lista.isEmpty()){
+                return lista;
+            }
+            throw new DataBaseException("Não há registros de vacinação válidos");
+        } catch (DataAccessException ex) {
+            throw new DataBaseException("Erro ao listar registros de vacinação");
+        }
     }
 }
