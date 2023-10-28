@@ -8,6 +8,7 @@ import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
 import feign.FeignException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -49,7 +50,7 @@ public class RegistroDeVacinacaoService {
 
     private List<Paciente> validarListaPacientes() {
         try {
-            ResponseEntity <List<Paciente>> response = interfaceAPI2Service.listarPacientesDaApi2();
+            ResponseEntity<List<Paciente>> response = interfaceAPI2Service.listarPacientesDaApi2();
             if (response.getStatusCode() == HttpStatus.OK) {
                 return response.getBody(); // Paciente encontrado na API externa
             } else {
@@ -62,7 +63,7 @@ public class RegistroDeVacinacaoService {
 
     private Vacina validarVacinaExistente(String identificacaoDaVacina) {
         try {
-            ResponseEntity <Vacina> response = interfaceAPI1Service.buscarVacinaDaApi1(identificacaoDaVacina);
+            ResponseEntity<Vacina> response = interfaceAPI1Service.buscarVacinaDaApi1(identificacaoDaVacina);
             if (response.getStatusCode() == HttpStatus.OK) {
                 return response.getBody(); // Paciente encontrado na API externa
             } else {
@@ -147,7 +148,8 @@ public class RegistroDeVacinacaoService {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(new Mensagem("Registro cadastrado com sucesso!"));
-        } catch (DoseMaiorException | RegistroExistenteException | VacinaIncompativelException | IntervaloInsuficienteException |
+        } catch (DoseMaiorException | RegistroExistenteException | VacinaIncompativelException |
+                 IntervaloInsuficienteException |
                  ExteriorException | DataBaseException e) {
             // Lidar com exceções
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -159,24 +161,20 @@ public class RegistroDeVacinacaoService {
     public List<RegistroDeVacinacao> listarTodosOsRegistrosDeVacinacao() {
         try {
             List<RegistroDeVacinacao> lista = registroDeVacinacaoRepository.findAll();
-            if(!lista.isEmpty()){
+            if (!lista.isEmpty()) {
                 return lista;
             }
-            throw new DataBaseException("Não há registros de vacinação válidos");
+            throw new DataBaseException("Não há registros de vacinação válidos (listarTodosOsRegistrosDeVacinacao)");
         } catch (DataAccessException ex) {
-            throw new DataBaseException("Erro ao listar registros de vacinação");
+            throw new DataBaseException("Erro ao listar registros de vacinação (listarTodosOsRegistrosDeVacinacao)");
         }
     }
 
     public List<RegistroDeVacinacao> obterRegistrosDeVacinacaoPorIdDaVacina(String id) {
         try {
-            List<RegistroDeVacinacao> lista = registroDeVacinacaoRepository.findByIdentificacaoDaVacina(id);
-            if(!lista.isEmpty()){
-                return lista;
-            }
-            throw new DataBaseException("Não há registros de vacinação válidos");
+            return registroDeVacinacaoRepository.findByIdentificacaoDaVacina(id);
         } catch (DataAccessException ex) {
-            throw new DataBaseException("Erro ao listar registros de vacinação");
+            throw new DataBaseException("Erro ao listar registros de vacinação (obterRegistrosDeVacinacaoPorIdDaVacina)");
         }
     }
 
@@ -220,37 +218,27 @@ public class RegistroDeVacinacaoService {
 
     public Integer obterNumeroDeVacinacao(String estado) {
         if (estado != null) {
-            List<Paciente> pacientes = validarListaPacientes();
             List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao();
-            Map<String, Long> pacienteParaQuantidade = listaRegistros.stream()
-                    .collect(Collectors.groupingBy(RegistroDeVacinacao::getIdentificacaoDoPaciente, Collectors.counting()));
-            Integer quantVacinacaoEstado = 0;
-            for (Paciente paciente : pacientes) {
-                if (estado.equals(paciente.getEndereco().getEstado())) {
-                    String identificacaoPaciente = paciente.getId();
-                    Long quantidadeDeRegistros = pacienteParaQuantidade.get(identificacaoPaciente);
-
-                    if (quantidadeDeRegistros != null) {
-                        quantVacinacaoEstado += quantidadeDeRegistros.intValue();
-                    }
-                }
-            }
-            return quantVacinacaoEstado;
+            long contagem = listaRegistros.stream()
+                    .filter(registro -> estado.equals(obterEstadoDoPaciente(registro.getIdentificacaoDoPaciente())))
+                    .count();
+            return (int) contagem;
         } else {
-            // Caso contrário, retorne o total de vacinas aplicadas de forma geral
             return listarTodosOsRegistrosDeVacinacao().size();
         }
     }
 
+    private String obterEstadoDoPaciente(String id) {
+        Paciente paciente = validarPacienteExistente(id);
+        return paciente.getEndereco().getEstado();
+    }
+
     public List<RegistroDeVacinacao> obterRegistroDeVacinacaoPorIdDoPaciente(String id) {
         try {
-            List<RegistroDeVacinacao> lista = registroDeVacinacaoRepository.findByIdentificacaoDoPaciente(id);
-            if(!lista.isEmpty()){
-                return lista;
-            }
-            throw new DataBaseException("Não há registros de vacinação válidos");
+            return registroDeVacinacaoRepository.findByIdentificacaoDoPaciente(id);
         } catch (DataAccessException ex) {
-            throw new DataBaseException("Erro ao listar registros de vacinação");
+
+            throw new DataBaseException("Erro ao listar registros de vacinação (obterRegistroDeVacinacaoPorIdDoPaciente)");
         }
     }
 }
