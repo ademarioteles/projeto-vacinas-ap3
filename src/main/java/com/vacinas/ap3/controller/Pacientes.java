@@ -1,7 +1,12 @@
 package com.vacinas.ap3.controller;
 
+import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
+import com.vacinas.ap3.exceptions.DataBaseException;
+import com.vacinas.ap3.exceptions.RegistroInexistenteException;
 import com.vacinas.ap3.service.InterfaceAPI2Service;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,8 +21,16 @@ public class Pacientes {
     }
 
     @GetMapping("/{id}/vacinas")
-    public Object obterRegistroResumidoDeVacinacaoPorIdDoPaciente(@PathVariable String id) {
-            return registroDeVacinacaoService.obterRegistroResumidoDeVacinacaoPorIdDoPaciente(id);
+    public ResponseEntity<RegistroDeVacinacaoResumido> obterRegistroResumidoDeVacinacaoPorIdDoPaciente(@PathVariable String id) {
+        try{
+            if (registroDeVacinacaoService.obterRegistroResumidoDeVacinacaoPorIdDoPaciente(id) != null){
+                return ResponseEntity.status(200).body(registroDeVacinacaoService.obterRegistroResumidoDeVacinacaoPorIdDoPaciente(id));
+            }else{
+                throw new RegistroInexistenteException("Nenhum registro Encontrado");
+            }
+        } catch (DataAccessException e) {
+            throw new DataBaseException("Erro ao listar registros de vacinação");
+        }
     }
 
     /*@GetMapping("/vacinas")

@@ -29,13 +29,25 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DataBaseException.class)
     protected ResponseEntity handleException(DataBaseException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
-        LOGGER.info("Tratamentação de exceção externa: " + mensagem);
+        LOGGER.info("Tratamentação de exceção banco de dados: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler(RegistroExistenteException.class)
     protected ResponseEntity handleException(RegistroExistenteException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção RegistroExistenteException: " + mensagem);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(RegistroInexistenteException.class)
+    protected ResponseEntity handleException(RegistroInexistenteException e) {
+        Mensagem mensagem = new Mensagem(e.getMessage());
+        LOGGER.info("Tratamentação de exceção RegistroInexistenteException: " + mensagem);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(ErroCriacaoRegistro.class)
+    protected ResponseEntity handleException(ErroCriacaoRegistro e) {
+        Mensagem mensagem = new Mensagem(e.getMessage());
+        LOGGER.info("Tratamentação de exceção ErroCriacaoRegistro: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
 
