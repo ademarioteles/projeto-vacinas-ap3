@@ -2,7 +2,9 @@ package com.vacinas.ap3.interfaces;
 import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.DTO.Vacina;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -10,5 +12,8 @@ import java.util.List;
 public interface VacinaCliente {
 
     @GetMapping("/vacinas")
-    List<Vacina> listarVacinas();
+    ResponseEntity <List<Vacina>> listarVacinas();
+
+    @GetMapping("/vacinas/{id}")
+    ResponseEntity vacina(@PathVariable String id);
 }

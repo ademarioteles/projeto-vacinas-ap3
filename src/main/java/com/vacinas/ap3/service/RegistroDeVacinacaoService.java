@@ -13,6 +13,7 @@ import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
 import feign.FeignException;
 import feign.Response;
+import org.aspectj.apache.bcel.generic.ReturnaddressType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,25 +39,26 @@ public class RegistroDeVacinacaoService {
         this.interfaceAPI1Service = interfaceAPI1Service;
     }
 
-    private void validarPacienteExistente(String identificacaoDoPaciente) {
+    private Paciente validarPacienteExistente(String identificacaoDoPaciente) {
         try {
             ResponseEntity response = interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente);
+            return (Paciente) response.getBody();
         } catch (FeignException e) {
             throw new ExteriorException("Paciente não encontrado");
         }
     }
 
-    private void validarVacinaExistente(String identificacaoDaVacina) {
-        List<Vacina> vacinas = interfaceAPI1Service.listarVacinasDaApi1();
-        boolean vacinaExiste = vacinas.stream()
-                .anyMatch(vacina -> vacina.getId().equals(identificacaoDaVacina));
-        if (!vacinaExiste) {
-            throw new VacinaInexistenteException("A vacina não encontrada");
+    private Vacina validarVacinaExistente(String identificacaoDaVacina) {
+        try {
+            ResponseEntity response = interfaceAPI1Service.buscarVacinaDaApi1(identificacaoDaVacina);
+            return (Vacina) response.getBody();
+        } catch (FeignException e) {
+            throw new ExteriorException("Vacina não encontrado");
         }
     }
 
+
     private void validarDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
-        List<Vacina> vacinas = interfaceAPI1Service.listarVacinasDaApi1();
         if (registros.isEmpty()) {
             // Se a lista de registros estiver vazia, a dose cadastrada deve ser a primeira.
             if (registro.getIdentificacaoDaDose() != 1) {
@@ -72,10 +74,7 @@ public class RegistroDeVacinacaoService {
             }
         }
 
-        Vacina vacinaAplicada = vacinas.stream()
-                .filter(vacina -> vacina.getId().equals(registro.getIdentificacaoDaVacina()))
-                .findFirst()
-                .orElseThrow(() -> new VacinaInexistenteException("A vacina não encontrada"));
+        Vacina vacinaAplicada = validarVacinaExistente(registro.getIdentificacaoDaVacina());
 
         if (registro.getIdentificacaoDaDose() > vacinaAplicada.getNumero_de_doses()) {
             throw new DoseMaiorException("Número de dose maior que o permitido.");
@@ -149,12 +148,7 @@ public class RegistroDeVacinacaoService {
         List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao().stream()
                 .filter(registro -> registro.getIdentificacaoDoPaciente().equals(id))
                 .collect(Collectors.toList());
-        List<Vacina> vacinas = interfaceAPI1Service.listarVacinasDaApi1();
-        Optional<Vacina> vacinaOptional = vacinas.stream()
-                .filter(vacinaFilter -> vacinaFilter.getId().equals(listaRegistros.get(0).getIdentificacaoDaVacina()))
-                .findFirst();
-        Vacina vacina = vacinaOptional.get();
-
+        Vacina vacina = validarVacinaExistente(listaRegistros.get(0).getIdentificacaoDaVacina());
         Map<String, Object> dados = new HashMap<>();
 
         Map<String, Object> jPaciente = new HashMap<>();

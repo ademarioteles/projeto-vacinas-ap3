@@ -1,8 +1,8 @@
 package com.vacinas.ap3.service;
 import com.vacinas.ap3.DTO.Vacina;
-import com.vacinas.ap3.interfaces.PacienteCliente;
 import com.vacinas.ap3.interfaces.VacinaCliente;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +16,11 @@ public class InterfaceAPI1Service {
         this.api1Client = api1Client;
     }
 
-    public List<Vacina> listarVacinasDaApi1() {
+    public ResponseEntity<List<Vacina>> listarVacinasDaApi1() {
         return api1Client.listarVacinas();
+    }
+
+    public ResponseEntity buscarVacinaDaApi1(String id) {
+        return api1Client.vacina(id);
     }
 }
