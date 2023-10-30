@@ -1,6 +1,7 @@
 package com.vacinas.ap3.controller;
 
 import com.vacinas.ap3.DTO.Paciente;
+import com.vacinas.ap3.entity.RegistroDeVacinacaoDoses;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
 import com.vacinas.ap3.exceptions.DataBaseException;
 import com.vacinas.ap3.exceptions.RegistroInexistenteException;

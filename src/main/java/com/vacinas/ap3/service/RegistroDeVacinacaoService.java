@@ -4,6 +4,7 @@ import com.vacinas.ap3.DTO.Endereco;
 import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.DTO.Vacina;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
+import com.vacinas.ap3.entity.RegistroDeVacinacaoDoses;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
@@ -18,7 +19,6 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -258,5 +258,31 @@ public class RegistroDeVacinacaoService {
             }
             return pacientesFiltrados;
         }
+    }
+    public List<RegistroDeVacinacaoDoses> obterDosesAplicadas(String estado) {
+        List<Vacina> vacinasUnicas = new ArrayList<>();
+        List<RegistroDeVacinacaoDoses> registroDeVacinacaoDoses = new ArrayList<>();
+        List<RegistroDeVacinacao> registros = listarTodosOsRegistrosDeVacinacao();
+        for (RegistroDeVacinacao registro : registros) {
+            //List<RegistroDeVacinacao> registrosPorPaciente = obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente());
+            Vacina vacina = validarVacinaExistente(registro.getIdentificacaoDaVacina());
+            if (!vacinasUnicas.contains(vacina)) {
+                vacinasUnicas.add(vacina);
+            }
+        }
+        for (Vacina vacina : vacinasUnicas){
+            RegistroDeVacinacaoDoses registroDoses = new RegistroDeVacinacaoDoses();
+            Integer quantidadeDoses = 0;
+            registroDoses.setFabricante(vacina.getFabricante());
+            registroDoses.setVacina(vacina.getNome());
+            for (RegistroDeVacinacao registro : registros){
+                if (registro.getIdentificacaoDaVacina().equals(vacina.getId())){
+                    quantidadeDoses++;
+                }
+            }
+            registroDoses.setDosesAplicadas(quantidadeDoses);
+            registroDeVacinacaoDoses.add(registroDoses);
+        }
+        return registroDeVacinacaoDoses;
     }
 }
