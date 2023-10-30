@@ -3,19 +3,15 @@ package com.vacinas.ap3.service;
 import com.vacinas.ap3.DTO.Endereco;
 import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.DTO.Vacina;
-import com.vacinas.ap3.entity.Mensagem;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
 import feign.FeignException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import com.google.gson.Gson;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -139,12 +135,12 @@ public class RegistroDeVacinacaoService {
 
 
     public Boolean criarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao) {
-            validarPacienteExistente(registroDeVacinacao.getIdentificacaoDoPaciente());
-            validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
-            List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
-            validarDose(registroDeVacinacao, registros);
-            registroDeVacinacaoRepository.save(registroDeVacinacao);
-            return true;
+        validarPacienteExistente(registroDeVacinacao.getIdentificacaoDoPaciente());
+        validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
+        List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
+        validarDose(registroDeVacinacao, registros);
+        registroDeVacinacaoRepository.save(registroDeVacinacao);
+        return true;
     }
 
     public List<RegistroDeVacinacao> listarTodosOsRegistrosDeVacinacao() {
@@ -167,7 +163,7 @@ public class RegistroDeVacinacaoService {
         }
     }
 
-    public  RegistroDeVacinacaoResumido obterRegistroResumidoDeVacinacaoPorIdDoPaciente(String id) {
+    public RegistroDeVacinacaoResumido obterRegistroResumidoDeVacinacaoPorIdDoPaciente(String id) {
         Paciente paciente = validarPacienteExistente(id);
         Endereco endereco = paciente.getEndereco();
         List<RegistroDeVacinacao> listaRegistros = obterRegistroDeVacinacaoPorIdDoPaciente(id);
@@ -194,7 +190,8 @@ public class RegistroDeVacinacaoService {
 
         return registroResumido;
     }
-    private Integer calculoIdade(String dataDeNascimento){
+
+    private Integer calculoIdade(String dataDeNascimento) {
         // Formato da data (ano-mês-dia)
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         // Converter a string em um LocalDate
@@ -224,6 +221,42 @@ public class RegistroDeVacinacaoService {
     }
 
     public List<RegistroDeVacinacao> obterRegistroDeVacinacaoPorIdDoPaciente(String id) {
-            return registroDeVacinacaoRepository.findByIdentificacaoDoPaciente(id);
+        return registroDeVacinacaoRepository.findByIdentificacaoDoPaciente(id);
+    }
+
+    public List<Paciente> obterPacientesAtrasados(String estado) {
+        LocalDate dataAtual = LocalDate.now();
+        List<RegistroDeVacinacao> registros = listarTodosOsRegistrosDeVacinacao();
+        List<Paciente> pacientesAtrasados = new ArrayList<>();
+
+        for (RegistroDeVacinacao registro : registros) {
+            List<RegistroDeVacinacao> registrosPorPaciente = obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente());
+
+            RegistroDeVacinacao ultimaDose = registrosPorPaciente.stream()
+                    .max(Comparator.comparing(RegistroDeVacinacao::getDataDeVacinacao))
+                    .orElse(null);
+
+            if (ultimaDose != null) {
+                Vacina ultimaVacina = validarVacinaExistente(ultimaDose.getIdentificacaoDaVacina());
+                LocalDate dataAlvo = ultimaDose.getDataDeVacinacao().plusDays(ultimaVacina.getIntervalo_doses());
+
+                if (dataAlvo.isBefore(dataAtual)) {
+                    pacientesAtrasados.add(validarPacienteExistente(registro.getIdentificacaoDoPaciente()));
+                }
+            }
+        }
+
+        if (estado == null) {
+            return pacientesAtrasados;
+        } else {
+            List<Paciente> pacientesFiltrados = new ArrayList<>();
+            for (Paciente paciente : pacientesAtrasados) {
+                Endereco endereco = paciente.getEndereco();
+                if (endereco.getEstado().equals(estado)) {
+                    pacientesFiltrados.add(paciente);
+                }
+            }
+            return pacientesFiltrados;
+        }
     }
 }

@@ -15,8 +15,6 @@ import java.util.List;
 @Data
 @RequiredArgsConstructor
 public class RegistroDeVacinacaoResumido {
-    @Id
-    private String id;
     private String nome;
     private Integer idade;
     private String bairro;
