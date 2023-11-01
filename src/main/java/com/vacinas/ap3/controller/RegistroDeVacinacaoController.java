@@ -42,6 +42,19 @@ public class RegistroDeVacinacaoController {
         }
     }
 
+    @GetMapping("/apagar/{id}")
+    public ResponseEntity apagarRegistroDeVacinacaoPorId(@PathVariable String id) {
+        try{
+            if (!registroDeVacinacaoService.apagarRegistro(id)){
+                return ResponseEntity.status(200).body("Resgistro apagado com sucesso");
+            }else{
+                throw new RegistroInexistenteException("Nenhum registro Encontrado");
+            }
+        } catch (DataAccessException e) {
+            throw new DataBaseException("Erro ao listar registros de vacinação");
+        }
+    }
+
     @GetMapping("/paciente/{id}")
     public ResponseEntity <List<RegistroDeVacinacao>> obterRegistroDeVacinacaoPorIdDoPaciente(@PathVariable String id) {
         try{

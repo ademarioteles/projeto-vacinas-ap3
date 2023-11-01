@@ -26,8 +26,8 @@ public class VacinasAplicadasController {
     }
 
     @GetMapping("")
-    public ResponseEntity <List<RegistroDeVacinacaoDoses>> obterDosesAplicadas(@RequestParam(name = "estado", required = false) String estado) {
-        return ResponseEntity.status(200).body(registroDeVacinacaoService.obterDosesAplicadas(estado));
+    public ResponseEntity <List<RegistroDeVacinacaoDoses>> obterDosesAplicadas(@RequestParam(name = "estado", required = false) String estado, @RequestParam(name = "fabricantes", required = false) String fabricantes) {
+        return ResponseEntity.status(200).body(registroDeVacinacaoService.obterDosesAplicadas(estado, fabricantes));
     }
 
 }

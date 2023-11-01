@@ -111,6 +111,12 @@ public class RegistroDeVacinacaoService {
                 .orElse(LocalDate.MIN);
     }
 
+    private RegistroDeVacinacao obterUltimaDose(List<RegistroDeVacinacao> registros) {
+        return registros.stream()
+                .max(Comparator.comparingInt(RegistroDeVacinacao::getIdentificacaoDaDose))
+                .orElse(null);
+    }
+
     private void validarIntervaloDoses(LocalDate dataUltimaDose, LocalDate dataRegistroAtual, Vacina vacinaAplicada) {
         long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
         if (intervaloDias < vacinaAplicada.getIntervalo_doses()) {
@@ -156,11 +162,16 @@ public class RegistroDeVacinacaoService {
     }
 
     public List<RegistroDeVacinacao> obterRegistrosDeVacinacaoPorIdDaVacina(String id) {
-        try {
-            return registroDeVacinacaoRepository.findByIdentificacaoDaVacina(id);
-        } catch (DataAccessException ex) {
-            throw new DataBaseException("Erro ao listar registros de vacinação (obterRegistrosDeVacinacaoPorIdDaVacina)");
+        return registroDeVacinacaoRepository.findByIdentificacaoDaVacina(id);
+    }
+
+    public Boolean obterRegistroDeVacinacaoPorId(String id) {
+        if (registroDeVacinacaoRepository.findById(id).isPresent()){
+            return true;
+        }else{
+            return false;
         }
+
     }
 
     public RegistroDeVacinacaoResumido obterRegistroResumidoDeVacinacaoPorIdDoPaciente(String id) {
@@ -183,7 +194,7 @@ public class RegistroDeVacinacaoService {
 
         List<String> Doses = new ArrayList<>();
         for (RegistroDeVacinacao registro : listaRegistros) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
             Doses.add(registro.getDataDeVacinacao().format(formatter));
         }
         registroResumido.setDoses(Doses);
@@ -224,6 +235,7 @@ public class RegistroDeVacinacaoService {
         return registroDeVacinacaoRepository.findByIdentificacaoDoPaciente(id);
     }
 
+
     public List<Paciente> obterPacientesAtrasados(String estado) {
         LocalDate dataAtual = LocalDate.now();
         List<RegistroDeVacinacao> registros = listarTodosOsRegistrosDeVacinacao();
@@ -259,24 +271,42 @@ public class RegistroDeVacinacaoService {
             return pacientesFiltrados;
         }
     }
-    public List<RegistroDeVacinacaoDoses> obterDosesAplicadas(String estado) {
+
+    public List<RegistroDeVacinacaoDoses> obterDosesAplicadas(String estado, String fabricantes) {
         List<Vacina> vacinasUnicas = new ArrayList<>();
         List<RegistroDeVacinacaoDoses> registroDeVacinacaoDoses = new ArrayList<>();
         List<RegistroDeVacinacao> registros = listarTodosOsRegistrosDeVacinacao();
         for (RegistroDeVacinacao registro : registros) {
-            //List<RegistroDeVacinacao> registrosPorPaciente = obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente());
+            String estadoPaciente = obterEstadoDoPaciente(registro.getIdentificacaoDoPaciente());
             Vacina vacina = validarVacinaExistente(registro.getIdentificacaoDaVacina());
-            if (!vacinasUnicas.contains(vacina)) {
-                vacinasUnicas.add(vacina);
+            if (fabricantes == null && estado == null) {
+                if (!vacinasUnicas.contains(vacina)) {
+                    vacinasUnicas.add(vacina);
+                }
+            } else if (fabricantes != null && estado == null) {
+                if (vacina.getFabricante().equals(fabricantes)) {
+                    if (!vacinasUnicas.contains(vacina)) {
+                        vacinasUnicas.add(vacina);
+                    }
+                }
+            } else {
+                System.out.println(estadoPaciente);
+                System.out.println(estado);
+                if (vacina.getFabricante().equals(fabricantes) && estadoPaciente.equals(estado)) {
+                    System.out.println("Entrou estado e fabricante");
+                    if (!vacinasUnicas.contains(vacina)) {
+                        vacinasUnicas.add(vacina);
+                    }
+                }
             }
         }
-        for (Vacina vacina : vacinasUnicas){
+        for (Vacina vacina : vacinasUnicas) {
             RegistroDeVacinacaoDoses registroDoses = new RegistroDeVacinacaoDoses();
             Integer quantidadeDoses = 0;
             registroDoses.setFabricante(vacina.getFabricante());
             registroDoses.setVacina(vacina.getNome());
-            for (RegistroDeVacinacao registro : registros){
-                if (registro.getIdentificacaoDaVacina().equals(vacina.getId())){
+            for (RegistroDeVacinacao registro : registros) {
+                if (registro.getIdentificacaoDaVacina().equals(vacina.getId())) {
                     quantidadeDoses++;
                 }
             }
@@ -285,4 +315,19 @@ public class RegistroDeVacinacaoService {
         }
         return registroDeVacinacaoDoses;
     }
+
+    public Boolean apagarRegistro(String id) {
+        Boolean registroExiste = obterRegistroDeVacinacaoPorId(id);
+        if (registroExiste) {
+            List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente());
+            RegistroDeVacinacao ultimoRegistro = obterUltimaDose(registros);
+            if (ultimoRegistro.getIdentificacaoDoPaciente().equals(registro.getIdentificacaoDoPaciente())) {
+                registroDeVacinacaoRepository.deleteById(id);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }
