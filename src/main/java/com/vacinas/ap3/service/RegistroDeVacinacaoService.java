@@ -117,6 +117,14 @@ public class RegistroDeVacinacaoService {
                 .orElse(null);
     }
 
+    public boolean confirmacaoUltimaDose(String id) {
+        RegistroDeVacinacao registro = obterRegistroDeVacinacaoPorId(id);
+        List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente());
+        RegistroDeVacinacao ultimoRegistro = obterUltimaDose(registros);
+
+        return ultimoRegistro.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose();
+    }
+
     private void validarIntervaloDoses(LocalDate dataUltimaDose, LocalDate dataRegistroAtual, Vacina vacinaAplicada) {
         long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
         if (intervaloDias < vacinaAplicada.getIntervalo_doses()) {
@@ -165,13 +173,13 @@ public class RegistroDeVacinacaoService {
         return registroDeVacinacaoRepository.findByIdentificacaoDaVacina(id);
     }
 
-    public Boolean obterRegistroDeVacinacaoPorId(String id) {
-        if (registroDeVacinacaoRepository.findById(id).isPresent()){
-            return true;
-        }else{
-            return false;
+    public RegistroDeVacinacao obterRegistroDeVacinacaoPorId(String id) {
+        Optional<RegistroDeVacinacao> registro = registroDeVacinacaoRepository.findById(id);
+        if (!registro.isEmpty()) {
+            return registro.get();
+        } else {
+            throw new RegistroInexistenteException("Registro não encontrado");
         }
-
     }
 
     public RegistroDeVacinacaoResumido obterRegistroResumidoDeVacinacaoPorIdDoPaciente(String id) {
@@ -317,16 +325,46 @@ public class RegistroDeVacinacaoService {
     }
 
     public Boolean apagarRegistro(String id) {
-        Boolean registroExiste = obterRegistroDeVacinacaoPorId(id);
-        if (registroExiste) {
-            List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente());
-            RegistroDeVacinacao ultimoRegistro = obterUltimaDose(registros);
-            if (ultimoRegistro.getIdentificacaoDoPaciente().equals(registro.getIdentificacaoDoPaciente())) {
-                registroDeVacinacaoRepository.deleteById(id);
-                return true;
-            }
+        if (confirmacaoUltimaDose(id)) {
+            registroDeVacinacaoRepository.deleteById(id);
+            return true;
+        } else {
+            throw new ApagarException("Só é possivel apagar o ultimo registro de vacinação");
         }
-        return false;
+    }
+
+    public Boolean editarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao, String id) {
+        if (confirmacaoUltimaDose(id)) {
+            RegistroDeVacinacao registroAtual = obterRegistroDeVacinacaoPorId(id);
+            validarEdicaoRegistro(registroDeVacinacao, registroAtual);
+            RegistroDeVacinacao registroEditado = criarRegistroEditado(registroDeVacinacao, id);
+            salvarRegistroEditado(registroEditado);
+            return true;
+        } else {
+            throw new EditarException("Só é possível editar o último registro de vacinação");
+        }
+    }
+
+    private void validarEdicaoRegistro(RegistroDeVacinacao registroDeVacinacao, RegistroDeVacinacao registroAtual) {
+        if (registroAtual.getIdentificacaoDoPaciente().equals(registroDeVacinacao.getIdentificacaoDoPaciente()) &&
+                registroAtual.getIdentificacaoDaDose() != registroDeVacinacao.getIdentificacaoDaDose()) {
+
+            throw new EditarException("Não é possível editar a dose desse registro de vacinação");
+        }
+        validarPacienteExistente(registroDeVacinacao.getIdentificacaoDoPaciente());
+        validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
+        List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
+        validarDose(registroDeVacinacao, registros);
+    }
+
+    private RegistroDeVacinacao criarRegistroEditado(RegistroDeVacinacao registroDeVacinacao, String id) {
+        RegistroDeVacinacao registroEditado = registroDeVacinacao;
+        registroEditado.setId(id);
+        return registroEditado;
+    }
+
+    private void salvarRegistroEditado(RegistroDeVacinacao registroEditado) {
+        registroDeVacinacaoRepository.save(registroEditado);
     }
 
 

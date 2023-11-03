@@ -65,6 +65,20 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
         return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(ApagarException.class)
+    protected ResponseEntity handleException(ApagarException e) {
+        Mensagem mensagem = new Mensagem(e.getMessage());
+        LOGGER.info("Tratamentação de exceção ApagarException: " + mensagem);
+        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(EditarException.class)
+    protected ResponseEntity handleException(EditarException e) {
+        Mensagem mensagem = new Mensagem(e.getMessage());
+        LOGGER.info("Tratamentação de exceção EditarException: " + mensagem);
+        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(VacinaIncompativelException.class)
     protected ResponseEntity handleException(VacinaIncompativelException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());

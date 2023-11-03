@@ -21,7 +21,7 @@ public class RegistroDeVacinacaoController {
         this.registroDeVacinacaoService = registroDeVacinacaoService;
     }
 
-    @PostMapping
+    @PostMapping("/cadastrar")
     public ResponseEntity criarRegistroDeVacinacao(@RequestBody RegistroDeVacinacao registroDeVacinacao) {
         try {
             if (registroDeVacinacaoService.criarRegistroDeVacinacao(registroDeVacinacao) == true) {
@@ -42,10 +42,31 @@ public class RegistroDeVacinacaoController {
         }
     }
 
+    @PostMapping("/editar/{id}")
+    public ResponseEntity editarRegistroDeVacinacao(@RequestBody RegistroDeVacinacao registroDeVacinacao, @PathVariable String id) {
+        try {
+            if (registroDeVacinacaoService.editarRegistroDeVacinacao(registroDeVacinacao, id) == true) {
+                return ResponseEntity.status(HttpStatus.CREATED)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new Mensagem("Registro editado com sucesso!"));
+            }else {
+                throw new ErroCriacaoRegistro("Erro ao editar o registro");
+            }
+        } catch (DoseMaiorException | RegistroExistenteException | VacinaIncompativelException |
+                 IntervaloInsuficienteException |
+                 ExteriorException |
+                 DataBaseException e) {
+            // Lidar com exceções
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new Mensagem(e.getMessage()));
+        }
+    }
+
     @GetMapping("/apagar/{id}")
     public ResponseEntity apagarRegistroDeVacinacaoPorId(@PathVariable String id) {
         try{
-            if (!registroDeVacinacaoService.apagarRegistro(id)){
+            if (registroDeVacinacaoService.apagarRegistro(id)){
                 return ResponseEntity.status(200).body("Resgistro apagado com sucesso");
             }else{
                 throw new RegistroInexistenteException("Nenhum registro Encontrado");
