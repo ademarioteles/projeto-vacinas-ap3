@@ -33,7 +33,7 @@ public class RegistroDeVacinacaoController {
                 throw new ErroCriacaoRegistro("Erro ao criar o registro");
             }
         } catch (DataInvalidaException | ExteriorException | DataBaseException | OrdemDoseInvalidaException |
-                 RegistroExistenteException | IntervaloInsuficienteException | OrdemDoseInvalidaException |
+                 RegistroExistenteException | IntervaloInsuficienteException |
                  VacinaIncompativelException | ErroCriacaoRegistro | DataAccessException e) {
             // Lidar com exceções
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -52,7 +52,7 @@ public class RegistroDeVacinacaoController {
             } else {
                 throw new EditarException("Erro ao editar o registro");
             }
-        } catch (RegistroInexistenteException | DataBaseException | ExteriorException | OrdemDoseInvalidaException |
+        } catch (RegistroInexistenteException | DataBaseException | ExteriorException  |
                  RegistroExistenteException | IntervaloInsuficienteException | OrdemDoseInvalidaException |
                  VacinaIncompativelException | DataAccessException e) {
             // Lidar com exceções
@@ -73,7 +73,7 @@ public class RegistroDeVacinacaoController {
                 throw new EditarException("Erro ao editar o registro");
             }
         } catch (RegistroInexistenteException | DataBaseException | ExteriorException | OrdemDoseInvalidaException |
-                 RegistroExistenteException | IntervaloInsuficienteException | OrdemDoseInvalidaException |
+                 RegistroExistenteException | IntervaloInsuficienteException  |
                  VacinaIncompativelException | DataAccessException e) {
             // Lidar com exceções
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -107,9 +107,7 @@ public class RegistroDeVacinacaoController {
                 throw new RegistroInexistenteException("Nenhum registro Encontrado");
             }
         } catch (DataAccessException | RegistroInexistenteException | DataBaseException e) {
-           return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Mensagem(e.getMessage()));
+            throw new DataBaseException("Erro ao listar registros de vacinação ");
         }
     }
 
@@ -122,9 +120,7 @@ public class RegistroDeVacinacaoController {
                 throw new RegistroInexistenteException("Nenhum registro Encontrado");
             }
         } catch (DataAccessException | RegistroInexistenteException | DataBaseException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Mensagem(e.getMessage()));
+            throw new DataBaseException("Erro ao listar registros de vacinação ");
         }
     }
 
@@ -137,9 +133,7 @@ public class RegistroDeVacinacaoController {
                 throw new RegistroInexistenteException("Nenhum registro Encontrado");
             }
         }catch (DataAccessException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Mensagem(e.getMessage()));
+            throw new DataBaseException("Erro ao listar registros de vacinação ");
         }
     }
 

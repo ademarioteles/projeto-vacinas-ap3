@@ -38,9 +38,7 @@ public class Pacientes {
                 throw new RegistroInexistenteException("Nenhum registro Encontrado");
             }
         } catch (DataAccessException | ExteriorException | DataBaseException | RegistroInexistenteException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Mensagem(e.getMessage()));
+            throw new DataBaseException("Erro ao listar registros de vacinação ");
         }
     }
 
@@ -54,9 +52,7 @@ public class Pacientes {
                 throw new RegistroInexistenteException("Nenhum paciente com doses atrasadas");
             }
         } catch (DataAccessException | ExteriorException | DataBaseException | RegistroInexistenteException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Mensagem(e.getMessage()));
+            throw new DataBaseException("Erro ao listar registros de vacinação ");
         }
    }
 }

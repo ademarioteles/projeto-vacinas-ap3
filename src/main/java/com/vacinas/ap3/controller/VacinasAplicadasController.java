@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -33,7 +34,7 @@ public class VacinasAplicadasController {
             // Lidar com exceções
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Mensagem(e.getMessage()));
+                    .body(-1); // or any suitable default value
         }
     }
 
@@ -44,11 +45,8 @@ public class VacinasAplicadasController {
         } catch (ExteriorException |
                  DataBaseException e) {
             // Lidar com exceções
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Mensagem(e.getMessage()));
+            throw new DataBaseException("Erro ao listar registros de vacinação ");
+
         }
-
     }
-
 }

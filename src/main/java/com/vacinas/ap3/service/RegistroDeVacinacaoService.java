@@ -149,9 +149,7 @@ public class RegistroDeVacinacaoService {
     }
 
     private void validarDataDeVacinacao(LocalDate data) {
-        System.out.println("entrou validar");
         if (data.isAfter(LocalDate.now())) {
-            System.out.println("entrou exception");
             throw new DataInvalidaException("Não é possivel ter um registro com uma data no futuro.");
         }
     }
@@ -307,10 +305,7 @@ public class RegistroDeVacinacaoService {
                     }
                 }
             } else {
-                System.out.println(estadoPaciente);
-                System.out.println(estado);
                 if (vacina.getFabricante().equals(fabricantes) && estadoPaciente.equals(estado)) {
-                    System.out.println("Entrou estado e fabricante");
                     if (!vacinasUnicas.contains(vacina)) {
                         vacinasUnicas.add(vacina);
                     }
