@@ -1,13 +1,17 @@
 package com.vacinas.ap3.controller;
 
 import com.vacinas.ap3.DTO.Paciente;
+import com.vacinas.ap3.entity.Mensagem;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoDoses;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
 import com.vacinas.ap3.exceptions.DataBaseException;
+import com.vacinas.ap3.exceptions.ExteriorException;
 import com.vacinas.ap3.exceptions.RegistroInexistenteException;
 import com.vacinas.ap3.service.InterfaceAPI2Service;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,8 +37,10 @@ public class Pacientes {
             }else{
                 throw new RegistroInexistenteException("Nenhum registro Encontrado");
             }
-        } catch (DataAccessException e) {
-            throw new DataBaseException("Erro ao listar registros de vacinação");
+        } catch (DataAccessException | ExteriorException | DataBaseException | RegistroInexistenteException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new Mensagem(e.getMessage()));
         }
     }
 
@@ -45,10 +51,12 @@ public class Pacientes {
             if (!pacientesAtrasados.isEmpty()){
                 return ResponseEntity.status(200).body(pacientesAtrasados);
             }else{
-                throw new RegistroInexistenteException("Nenhum pacientes com doses atrasadas");
+                throw new RegistroInexistenteException("Nenhum paciente com doses atrasadas");
             }
-        } catch (DataAccessException e) {
-            throw new DataBaseException("Erro ao listar registros de vacinação");
+        } catch (DataAccessException | ExteriorException | DataBaseException | RegistroInexistenteException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new Mensagem(e.getMessage()));
         }
    }
 }

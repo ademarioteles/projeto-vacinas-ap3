@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/registros-de-vacinacao")
@@ -28,13 +29,12 @@ public class RegistroDeVacinacaoController {
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(new Mensagem("Registro cadastrado com sucesso!"));
-            }else {
+            } else {
                 throw new ErroCriacaoRegistro("Erro ao criar o registro");
             }
-        } catch (DoseMaiorException | RegistroExistenteException | VacinaIncompativelException |
-                 IntervaloInsuficienteException |
-                 ExteriorException |
-                 DataBaseException e) {
+        } catch (DataInvalidaException | ExteriorException | DataBaseException | OrdemDoseInvalidaException |
+                 RegistroExistenteException | IntervaloInsuficienteException | OrdemDoseInvalidaException |
+                 VacinaIncompativelException | ErroCriacaoRegistro | DataAccessException e) {
             // Lidar com exceções
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -49,13 +49,12 @@ public class RegistroDeVacinacaoController {
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(new Mensagem("Registro editado com sucesso!"));
-            }else {
-                throw new ErroCriacaoRegistro("Erro ao editar o registro");
+            } else {
+                throw new EditarException("Erro ao editar o registro");
             }
-        } catch (DoseMaiorException | RegistroExistenteException | VacinaIncompativelException |
-                 IntervaloInsuficienteException |
-                 ExteriorException |
-                 DataBaseException e) {
+        } catch (RegistroInexistenteException | DataBaseException | ExteriorException | OrdemDoseInvalidaException |
+                 RegistroExistenteException | IntervaloInsuficienteException | OrdemDoseInvalidaException |
+                 VacinaIncompativelException | DataAccessException e) {
             // Lidar com exceções
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -63,55 +62,84 @@ public class RegistroDeVacinacaoController {
         }
     }
 
+    @PatchMapping("/editar/{id}")
+    public ResponseEntity editarRegistroDeVacinacaoParcial(@PathVariable String id, @RequestBody Map<String, Object> atualizacao) {
+        try {
+            if (registroDeVacinacaoService.editarRegistroDeVacinacaoParcial(id, atualizacao) == true) {
+                return ResponseEntity.status(HttpStatus.CREATED)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new Mensagem("Registro editado com sucesso!"));
+            } else {
+                throw new EditarException("Erro ao editar o registro");
+            }
+        } catch (RegistroInexistenteException | DataBaseException | ExteriorException | OrdemDoseInvalidaException |
+                 RegistroExistenteException | IntervaloInsuficienteException | OrdemDoseInvalidaException |
+                 VacinaIncompativelException | DataAccessException e) {
+            // Lidar com exceções
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new Mensagem(e.getMessage()));
+        }
+
+    }
+
     @GetMapping("/apagar/{id}")
     public ResponseEntity apagarRegistroDeVacinacaoPorId(@PathVariable String id) {
-        try{
-            if (registroDeVacinacaoService.apagarRegistro(id)){
+        try {
+            if (registroDeVacinacaoService.apagarRegistro(id)) {
                 return ResponseEntity.status(200).body("Resgistro apagado com sucesso");
-            }else{
+            } else {
                 throw new RegistroInexistenteException("Nenhum registro Encontrado");
             }
-        } catch (DataAccessException e) {
-            throw new DataBaseException("Erro ao listar registros de vacinação");
+        } catch (DataAccessException | RegistroInexistenteException | DataBaseException | ApagarException e) {
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new Mensagem(e.getMessage()));
         }
     }
 
     @GetMapping("/paciente/{id}")
-    public ResponseEntity <List<RegistroDeVacinacao>> obterRegistroDeVacinacaoPorIdDoPaciente(@PathVariable String id) {
-        try{
-            if (!registroDeVacinacaoService.obterRegistroDeVacinacaoPorIdDoPaciente(id).isEmpty()){
+    public ResponseEntity<List<RegistroDeVacinacao>> obterRegistroDeVacinacaoPorIdDoPaciente(@PathVariable String id) {
+        try {
+            if (!registroDeVacinacaoService.obterRegistroDeVacinacaoPorIdDoPaciente(id).isEmpty()) {
                 return ResponseEntity.status(200).body(registroDeVacinacaoService.obterRegistroDeVacinacaoPorIdDoPaciente(id));
-            }else{
+            } else {
                 throw new RegistroInexistenteException("Nenhum registro Encontrado");
             }
-        } catch (DataAccessException e) {
-            throw new DataBaseException("Erro ao listar registros de vacinação");
+        } catch (DataAccessException | RegistroInexistenteException | DataBaseException e) {
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new Mensagem(e.getMessage()));
         }
     }
 
     @GetMapping("/vacina/{id}")
     public ResponseEntity<List<RegistroDeVacinacao>> obterRegistrosDeVacinacaoPorIdDaVacina(@PathVariable String id) {
         try {
-            if (!registroDeVacinacaoService.obterRegistrosDeVacinacaoPorIdDaVacina(id).isEmpty()){
+            if (!registroDeVacinacaoService.obterRegistrosDeVacinacaoPorIdDaVacina(id).isEmpty()) {
                 return ResponseEntity.status(200).body(registroDeVacinacaoService.obterRegistrosDeVacinacaoPorIdDaVacina(id));
-            }else {
+            } else {
                 throw new RegistroInexistenteException("Nenhum registro Encontrado");
             }
-        }catch (DataAccessException e) {
-            throw new DataBaseException("Erro ao listar registros de vacinação ");
+        } catch (DataAccessException | RegistroInexistenteException | DataBaseException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new Mensagem(e.getMessage()));
         }
     }
 
     @GetMapping("/lista")
     public ResponseEntity<List<RegistroDeVacinacao>> obterListaRegistroDeVacinacao() {
         try {
-            if (!registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao().isEmpty()){
+            if (!registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao().isEmpty()) {
                 return ResponseEntity.status(200).body(registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao());
-            }else {
+            } else {
                 throw new RegistroInexistenteException("Nenhum registro Encontrado");
             }
         }catch (DataAccessException e) {
-            throw new DataBaseException("Erro ao listar registros de vacinação ");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new Mensagem(e.getMessage()));
         }
     }
 

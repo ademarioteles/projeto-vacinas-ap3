@@ -3,6 +3,7 @@ package com.vacinas.ap3.service;
 import com.vacinas.ap3.DTO.Endereco;
 import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.DTO.Vacina;
+import com.vacinas.ap3.entity.ProfissionalDeSaude;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoDoses;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
@@ -147,8 +148,16 @@ public class RegistroDeVacinacaoService {
         }
     }
 
+    private void validarDataDeVacinacao(LocalDate data) {
+        System.out.println("entrou validar");
+        if (data.isAfter(LocalDate.now())) {
+            System.out.println("entrou exception");
+            throw new DataInvalidaException("Não é possivel ter um registro com uma data no futuro.");
+        }
+    }
 
     public Boolean criarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao) {
+        validarDataDeVacinacao(registroDeVacinacao.getDataDeVacinacao());
         validarPacienteExistente(registroDeVacinacao.getIdentificacaoDoPaciente());
         validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
         List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
@@ -345,6 +354,51 @@ public class RegistroDeVacinacaoService {
         }
     }
 
+    public Boolean editarRegistroDeVacinacaoParcial(String id, Map<String, Object> atualizacao) {
+        RegistroDeVacinacao registroAtualizado = obterRegistroDeVacinacaoPorId(id);
+        ProfissionalDeSaude profissionalDeSaude = registroAtualizado.getProfissionalDeSaude();
+        List <String> itens = new ArrayList<>();
+
+        for (Map.Entry<String, Object> entry : atualizacao.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            switch (key) {
+                case "dataDeVacinacao":
+                    itens.add("dataDeVacinacao");
+                    registroAtualizado.setDataDeVacinacao((LocalDate) value);
+                    break;
+                case "identificacaoDoPaciente":
+                    itens.add("identificacaoDoPaciente");
+                    registroAtualizado.setIdentificacaoDoPaciente((String) value);
+                    break;
+                case "identificacaoDaVacina":
+                    itens.add("identificacaoDaVacina");
+                    registroAtualizado.setIdentificacaoDaVacina((String) value);
+                    break;
+                case "identificacaoDaDose":
+                    itens.add("identificacaoDaDose");
+                    registroAtualizado.setIdentificacaoDaDose((Integer) value);
+                    break;
+                case "nome":
+                    itens.add("nome");
+                    profissionalDeSaude.setNome((String) value);
+                    break;
+                case "cpf":
+                    itens.add("cpf");
+                    profissionalDeSaude.setCpf((String) value);
+                    break;
+            }
+        }
+        for (String elemento : itens) {
+            if (!elemento.matches("nome") && !elemento.matches("cpf")) {
+                return editarRegistroDeVacinacao(registroAtualizado, id);
+            }
+        }
+        salvarRegistroEditado(registroAtualizado);
+        return true;
+    }
+
     private void validarEdicaoRegistro(RegistroDeVacinacao registroDeVacinacao, RegistroDeVacinacao registroAtual) {
         if (registroAtual.getIdentificacaoDoPaciente().equals(registroDeVacinacao.getIdentificacaoDoPaciente()) &&
                 registroAtual.getIdentificacaoDaDose() != registroDeVacinacao.getIdentificacaoDaDose()) {
@@ -366,6 +420,5 @@ public class RegistroDeVacinacaoService {
     private void salvarRegistroEditado(RegistroDeVacinacao registroEditado) {
         registroDeVacinacaoRepository.save(registroEditado);
     }
-
 
 }

@@ -79,6 +79,13 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
         return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(DataInvalidaException.class)
+    protected ResponseEntity handleException(DataInvalidaException e) {
+        Mensagem mensagem = new Mensagem(e.getMessage());
+        LOGGER.info("Tratamentação de exceção DataInvalidaException: " + mensagem);
+        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(VacinaIncompativelException.class)
     protected ResponseEntity handleException(VacinaIncompativelException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
