@@ -34,7 +34,7 @@ public class RegistroDeVacinacaoService {
         this.interfaceAPI1Service = interfaceAPI1Service;
     }
 
-    private Paciente validarPacienteExistente(String identificacaoDoPaciente) {
+    public Paciente validarPacienteExistente(String identificacaoDoPaciente) {
         try {
             ResponseEntity<Paciente> response = interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente);
             if (response.getStatusCode() == HttpStatus.OK) {
@@ -47,20 +47,7 @@ public class RegistroDeVacinacaoService {
         }
     }
 
-    private List<Paciente> validarListaPacientes() {
-        try {
-            ResponseEntity<List<Paciente>> response = interfaceAPI2Service.listarPacientesDaApi2();
-            if (response.getStatusCode() == HttpStatus.OK) {
-                return response.getBody(); // Paciente encontrado na API externa
-            } else {
-                throw new ExteriorException("Paciente não encontrado na API externa");
-            }
-        } catch (FeignException e) {
-            throw new ExteriorException("Erro ao buscar paciente na API externa");
-        }
-    }
-
-    private Vacina validarVacinaExistente(String identificacaoDaVacina) {
+    public Vacina validarVacinaExistente(String identificacaoDaVacina) {
         try {
             ResponseEntity<Vacina> response = interfaceAPI1Service.buscarVacinaDaApi1(identificacaoDaVacina);
             if (response.getStatusCode() == HttpStatus.OK) {
@@ -91,28 +78,47 @@ public class RegistroDeVacinacaoService {
         validarVacinaIncompativel(registro, registros);
     }
 
-    private void validarPrimeiraDose(RegistroDeVacinacao registro) {
+    public void validarPrimeiraDose(RegistroDeVacinacao registro) {
         if (registro.getIdentificacaoDaDose() != 1) {
             throw new OrdemDoseInvalidaException("Nenhum registro de vacinação encontrado, essa dose deverá ser a primeira");
         }
     }
 
-    private void validarDoseExistente(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
+    public void validarDoseExistente(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
         for (RegistroDeVacinacao registroExistente : registros) {
             if (registroExistente.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose()) {
                 throw new RegistroExistenteException("Registro de vacinação já existe.");
             }
         }
     }
+    public void validarIntervaloDoses(LocalDate dataUltimaDose, LocalDate dataRegistroAtual, Vacina vacinaAplicada) {
+        long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
+        if (intervaloDias < vacinaAplicada.getIntervalo_doses()) {
+            throw new IntervaloInsuficienteException("Intervalo insuficiente entre doses.");
+        }
+    }
+    public void validarOrdemDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
+        int doseAnterior = registros.isEmpty() ? 0 : registros.get(registros.size() - 1).getIdentificacaoDaDose();
+        int novaDose = registro.getIdentificacaoDaDose();
 
-    private LocalDate obterDataUltimaDose(List<RegistroDeVacinacao> registros) {
+        if (novaDose != doseAnterior + 1) {
+            throw new OrdemDoseInvalidaException("Ordem de Vacinação Inválida");
+        }
+    }
+    public void validarVacinaIncompativel(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
+        if (!registro.getIdentificacaoDaVacina().equals(registros.get(0).getIdentificacaoDaVacina())) {
+            throw new VacinaIncompativelException("Vacina diferente das doses anteriores.");
+        }
+    }
+
+    public LocalDate obterDataUltimaDose(List<RegistroDeVacinacao> registros) {
         return registros.stream()
                 .map(RegistroDeVacinacao::getDataDeVacinacao)
                 .max(Comparator.naturalOrder())
                 .orElse(LocalDate.MIN);
     }
 
-    private RegistroDeVacinacao obterUltimaDose(List<RegistroDeVacinacao> registros) {
+    public RegistroDeVacinacao obterUltimaDose(List<RegistroDeVacinacao> registros) {
         return registros.stream()
                 .max(Comparator.comparingInt(RegistroDeVacinacao::getIdentificacaoDaDose))
                 .orElse(null);
@@ -126,29 +132,7 @@ public class RegistroDeVacinacaoService {
         return ultimoRegistro.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose();
     }
 
-    private void validarIntervaloDoses(LocalDate dataUltimaDose, LocalDate dataRegistroAtual, Vacina vacinaAplicada) {
-        long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
-        if (intervaloDias < vacinaAplicada.getIntervalo_doses()) {
-            throw new IntervaloInsuficienteException("Intervalo insuficiente entre doses.");
-        }
-    }
-
-    private void validarOrdemDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
-        int doseAnterior = registros.isEmpty() ? 0 : registros.get(registros.size() - 1).getIdentificacaoDaDose();
-        int novaDose = registro.getIdentificacaoDaDose();
-
-        if (novaDose != doseAnterior + 1) {
-            throw new OrdemDoseInvalidaException("Ordem de Vacinação Inválida");
-        }
-    }
-
-    private void validarVacinaIncompativel(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
-        if (!registro.getIdentificacaoDaVacina().equals(registros.get(0).getIdentificacaoDaVacina())) {
-            throw new VacinaIncompativelException("Vacina diferente das doses anteriores.");
-        }
-    }
-
-    private void validarDataDeVacinacao(LocalDate data) {
+    public void validarDataDeVacinacao(LocalDate data) {
         if (data.isAfter(LocalDate.now())) {
             throw new DataInvalidaException("Não é possivel ter um registro com uma data no futuro.");
         }
@@ -249,7 +233,6 @@ public class RegistroDeVacinacaoService {
     public List<RegistroDeVacinacao> obterRegistroDeVacinacaoPorIdDoPaciente(String id) {
         return registroDeVacinacaoRepository.findByIdentificacaoDoPaciente(id);
     }
-
 
     public List<Paciente> obterPacientesAtrasados(String estado) {
         LocalDate dataAtual = LocalDate.now();

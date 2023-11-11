@@ -1,8 +1,6 @@
 package com.vacinas.ap3.controller;
 
 import com.vacinas.ap3.DTO.Paciente;
-import com.vacinas.ap3.entity.Mensagem;
-import com.vacinas.ap3.entity.RegistroDeVacinacaoDoses;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
 import com.vacinas.ap3.exceptions.DataBaseException;
 import com.vacinas.ap3.exceptions.ExteriorException;
@@ -10,8 +8,6 @@ import com.vacinas.ap3.exceptions.RegistroInexistenteException;
 import com.vacinas.ap3.service.InterfaceAPI2Service;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
 import org.springframework.dao.DataAccessException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
