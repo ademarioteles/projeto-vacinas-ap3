@@ -201,7 +201,7 @@ public class RegistroDeVacinacaoService {
         return registroResumido;
     }
 
-    private Integer calculoIdade(String dataDeNascimento) {
+    public Integer calculoIdade(String dataDeNascimento) {
         // Formato da data (ano-mês-dia)
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         // Converter a string em um LocalDate
@@ -225,7 +225,7 @@ public class RegistroDeVacinacaoService {
         }
     }
 
-    private String obterEstadoDoPaciente(String id) {
+    public String obterEstadoDoPaciente(String id) {
         Paciente paciente = validarPacienteExistente(id);
         return paciente.getEndereco().getEstado();
     }
