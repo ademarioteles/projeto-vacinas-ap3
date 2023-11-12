@@ -1,9 +1,9 @@
 package com.vacinas.ap3;
 
-import com.vacinas.ap3.DTO.Endereco;
 import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.DTO.Vacina;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
+import com.vacinas.ap3.entity.RegistroDeVacinacaoDoses;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
 import com.vacinas.ap3.service.InterfaceAPI1Service;
@@ -22,6 +22,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -53,7 +54,7 @@ class RegistroDeVacinacaoControllerTests {
     @Test
     void testValidarPacienteExistente_PacienteEncontrado() {
         String identificacaoDoPaciente = "identificacaoDoPaciente";
-        Paciente pacienteRetorno = new Paciente(); // Suponhamos que você tenha uma classe Paciente
+        Paciente pacienteRetorno = PacienteUtils.criarUmPaciente(); // Suponhamos que você tenha uma classe Paciente
 
         // Mock da resposta da chamada externa simulando um paciente encontrado
         when(interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente))
@@ -407,7 +408,7 @@ class RegistroDeVacinacaoControllerTests {
         RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Verifica se uma exceção é lançada quando ocorre um erro no acesso ao banco de dados
-        assertThrows(DataBaseException.class, () -> registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao());
+        assertThrows(DataAccessResourceFailureException.class, () -> registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao());
     }
     //obterRegistrosDeVacinacaoPorIdDaVacina
     @Test
@@ -517,5 +518,106 @@ class RegistroDeVacinacaoControllerTests {
         int numVacinacoes = registroDeVacinacaoService.obterNumeroDeVacinacao(estado);
         assertEquals(1, numVacinacoes); // Apenas um paciente está em SP na lista
     }*/
+
+    //obterEstadoDoPaciente
+    @Test
+    void testObterEstadoDoPaciente_PacienteEncontrado() {
+        String identificacaoDoPaciente = "1";
+        Paciente pacienteRetorno = PacienteUtils.criarUmPaciente(); // Suponhamos que você tenha uma classe Paciente
+
+        // Mock da resposta da chamada externa simulando um paciente encontrado
+        when(interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente))
+                .thenReturn(ResponseEntity.ok(pacienteRetorno));
+
+        String estado = registroDeVacinacaoService.obterEstadoDoPaciente("1");
+        assertEquals("SP", estado);
+    }
+
+    @Test
+    void testObterEstadoDoPaciente_PacienteNaoEncontrado() {
+        // Configuração do mock com paciente não encontrado na API externa
+        String idPaciente = "1";
+        ResponseEntity<Paciente> responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        when(interfaceAPI2Service.PacienteDaApi2(idPaciente)).thenReturn(responseEntity);
+
+        assertThrows(ExteriorException.class, () -> registroDeVacinacaoService.obterEstadoDoPaciente("1"));
+    }
+
+    //obterDosesAplicadas
+    @Test
+    void testObterDosesAplicadas() {
+
+        // Simulando a lista de registros de vacinação
+        List<RegistroDeVacinacao> registros = RegistroDeVacinacaoUtils.criarOutraListaRegistrosExemploP1();
+        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
+        Paciente pacienteRetorno = PacienteUtils.criarUmPaciente(); // Suponhamos que você tenha uma classe Paciente
+
+        // Mock da resposta da chamada externa simulando um paciente encontrado
+        when(interfaceAPI2Service.PacienteDaApi2("1"))
+                .thenReturn(ResponseEntity.ok(pacienteRetorno));
+        // Criação da sua classe e injeção do repositório simulado
+        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
+        when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
+        // Simulando a resposta de busca da vacina
+        Vacina vacina = VacinaUtils.criarVacinaExemplo();
+        ResponseEntity<Vacina> responseEntityVacina = new ResponseEntity<>(vacina, HttpStatus.OK);
+        when(registroDeVacinacaoService.interfaceAPI1Service.buscarVacinaDaApi1("1")).thenReturn(responseEntityVacina);
+
+
+        // Teste do método obterDosesAplicadas
+        List<RegistroDeVacinacaoDoses> resultado = registroDeVacinacaoService.obterDosesAplicadas(null, "FabricanteY");
+        System.out.println(resultado);
+        // Verifique se o resultado possui o tamanho esperado ou outra lógica
+        assertEquals(3, resultado.get(0).getDosesAplicadas());
+    }
+    @Test
+    void testObterDosesAplicadas_Estado() {
+
+        // Simulando a lista de registros de vacinação
+        List<RegistroDeVacinacao> registros = RegistroDeVacinacaoUtils.criarOutraListaRegistrosExemploP2();
+        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
+        Paciente pacienteRetorno = PacienteUtils.criarOutroPaciente(); // Suponhamos que você tenha uma classe Paciente
+
+        // Mock da resposta da chamada externa simulando um paciente encontrado
+        when(interfaceAPI2Service.PacienteDaApi2("2"))
+                .thenReturn(ResponseEntity.ok(pacienteRetorno));
+        // Criação da sua classe e injeção do repositório simulado
+        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
+        when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
+        // Simulando a resposta de busca da vacina
+        Vacina vacina = VacinaUtils.criarVacinaExemplo();
+        ResponseEntity<Vacina> responseEntityVacina = new ResponseEntity<>(vacina, HttpStatus.OK);
+        when(registroDeVacinacaoService.interfaceAPI1Service.buscarVacinaDaApi1("1")).thenReturn(responseEntityVacina);
+
+
+        // Teste do método obterDosesAplicadas
+        List<RegistroDeVacinacaoDoses> resultado = registroDeVacinacaoService.obterDosesAplicadas("RJ", "FabricanteY");
+        System.out.println(resultado);
+        // Verifique se o resultado possui o tamanho esperado ou outra lógica
+        assertEquals(2, resultado.get(0).getDosesAplicadas());
+    }
+    @Test
+    void testObterDosesAplicadas_Vazio() {
+
+        // Simulando a lista de registros de vacinação
+        List<RegistroDeVacinacao> registros = new ArrayList<>();
+        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
+        Paciente pacienteRetorno = PacienteUtils.criarOutroPaciente(); // Suponhamos que você tenha uma classe Paciente
+
+        // Mock da resposta da chamada externa simulando um paciente encontrado
+        when(interfaceAPI2Service.PacienteDaApi2("2"))
+                .thenReturn(ResponseEntity.ok(pacienteRetorno));
+        // Criação da sua classe e injeção do repositório simulado
+        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
+        when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
+        // Simulando a resposta de busca da vacina
+        Vacina vacina = VacinaUtils.criarVacinaExemplo();
+        ResponseEntity<Vacina> responseEntityVacina = new ResponseEntity<>(vacina, HttpStatus.OK);
+        when(registroDeVacinacaoService.interfaceAPI1Service.buscarVacinaDaApi1("1")).thenReturn(responseEntityVacina);
+
+
+        // Verifique se o resultado possui o tamanho esperado ou outra lógica
+        assertThrows(DataBaseException.class, () -> registroDeVacinacaoService.obterDosesAplicadas("RJ", "FabricanteY"));
+    }
 }
 

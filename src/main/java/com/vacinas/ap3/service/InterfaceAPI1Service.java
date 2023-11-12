@@ -20,7 +20,7 @@ public class InterfaceAPI1Service {
         return api1Client.listarVacinas();
     }
 
-    public ResponseEntity buscarVacinaDaApi1(String id) {
+    public ResponseEntity  buscarVacinaDaApi1(String id) {
         return api1Client.vacina(id);
     }
 }

@@ -46,7 +46,7 @@ public class RegistroDeVacinacaoUtils {
         profissionalDeSaude.setCpf("2345678");
         registro.setProfissionalDeSaude(profissionalDeSaude);
         registros.add(registro);
-        //segunda dose
+        //terceira dose
         registro.setId("3");
         registro.setDataDeVacinacao(LocalDate.now().plusDays(2));
         registro.setIdentificacaoDoPaciente("6539cce426ac996a47e0ce8d");
@@ -56,6 +56,69 @@ public class RegistroDeVacinacaoUtils {
         profissionalDeSaude.setCpf("2345678");
         registro.setProfissionalDeSaude(profissionalDeSaude);
         registros.add(registro);
+
+        return registros;
+    }
+    public static List<RegistroDeVacinacao> criarOutraListaRegistrosExemploP1() {
+        List<RegistroDeVacinacao> registros = new ArrayList<>();
+        ProfissionalDeSaude profissionalDeSaude = new ProfissionalDeSaude();
+        RegistroDeVacinacao registro = new RegistroDeVacinacao();
+        registro.setId("1");
+        registro.setDataDeVacinacao(LocalDate.now());
+        registro.setIdentificacaoDoPaciente("1");
+        registro.setIdentificacaoDaVacina("1");
+        registro.setIdentificacaoDaDose(1);
+        profissionalDeSaude.setNome("Maria");
+        profissionalDeSaude.setCpf("2345678");
+        registro.setProfissionalDeSaude(profissionalDeSaude);
+        registros.add(registro);
+        //segunda dose
+        registro.setId("2");
+        registro.setDataDeVacinacao(LocalDate.now().plusDays(1));
+        registro.setIdentificacaoDoPaciente("1");
+        registro.setIdentificacaoDaVacina("1");
+        registro.setIdentificacaoDaDose(2);
+        profissionalDeSaude.setNome("Maria");
+        profissionalDeSaude.setCpf("2345678");
+        registro.setProfissionalDeSaude(profissionalDeSaude);
+        registros.add(registro);
+        //terceira dose
+        registro.setId("3");
+        registro.setDataDeVacinacao(LocalDate.now().plusDays(2));
+        registro.setIdentificacaoDoPaciente("1");
+        registro.setIdentificacaoDaVacina("1");
+        registro.setIdentificacaoDaDose(3);
+        profissionalDeSaude.setNome("Maria");
+        profissionalDeSaude.setCpf("2345678");
+        registro.setProfissionalDeSaude(profissionalDeSaude);
+        registros.add(registro);
+
+        return registros;
+    }
+    public static List<RegistroDeVacinacao> criarOutraListaRegistrosExemploP2() {
+        List<RegistroDeVacinacao> registros = new ArrayList<>();
+        ProfissionalDeSaude profissionalDeSaude = new ProfissionalDeSaude();
+        RegistroDeVacinacao registro = new RegistroDeVacinacao();
+        registro.setId("1");
+        registro.setDataDeVacinacao(LocalDate.now());
+        registro.setIdentificacaoDoPaciente("2");
+        registro.setIdentificacaoDaVacina("1");
+        registro.setIdentificacaoDaDose(1);
+        profissionalDeSaude.setNome("Maria");
+        profissionalDeSaude.setCpf("2345678");
+        registro.setProfissionalDeSaude(profissionalDeSaude);
+        registros.add(registro);
+        //segunda dose
+        registro.setId("2");
+        registro.setDataDeVacinacao(LocalDate.now().plusDays(1));
+        registro.setIdentificacaoDoPaciente("2");
+        registro.setIdentificacaoDaVacina("1");
+        registro.setIdentificacaoDaDose(2);
+        profissionalDeSaude.setNome("Maria");
+        profissionalDeSaude.setCpf("2345678");
+        registro.setProfissionalDeSaude(profissionalDeSaude);
+        registros.add(registro);
+
 
         return registros;
     }

@@ -25,8 +25,8 @@ import java.util.*;
 @Service
 public class RegistroDeVacinacaoService {
     private RegistroDeVacinacaoRepository registroDeVacinacaoRepository;
-    private InterfaceAPI2Service interfaceAPI2Service;
-    private InterfaceAPI1Service interfaceAPI1Service;
+    public InterfaceAPI2Service interfaceAPI2Service;
+    public InterfaceAPI1Service interfaceAPI1Service;
 
     public RegistroDeVacinacaoService(RegistroDeVacinacaoRepository registroDeVacinacaoRepository, InterfaceAPI2Service interfaceAPI2Service, InterfaceAPI1Service interfaceAPI1Service) {
         this.registroDeVacinacaoRepository = registroDeVacinacaoRepository;
@@ -149,15 +149,11 @@ public class RegistroDeVacinacaoService {
     }
 
     public List<RegistroDeVacinacao> listarTodosOsRegistrosDeVacinacao() {
-        try {
             List<RegistroDeVacinacao> lista = registroDeVacinacaoRepository.findAll();
             if (!lista.isEmpty()) {
                 return lista;
             }
             throw new DataBaseException("Não há registros de vacinação válidos (listarTodosOsRegistrosDeVacinacao)");
-        } catch (DataAccessException ex) {
-            throw new DataBaseException("Erro ao listar registros de vacinação (listarTodosOsRegistrosDeVacinacao)");
-        }
     }
 
     public List<RegistroDeVacinacao> obterRegistrosDeVacinacaoPorIdDaVacina(String id) {

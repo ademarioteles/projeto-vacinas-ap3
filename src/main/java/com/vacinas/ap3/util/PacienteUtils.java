@@ -2,7 +2,6 @@ package com.vacinas.ap3.util;
 
 import com.vacinas.ap3.DTO.Endereco;
 import com.vacinas.ap3.DTO.Paciente;
-import com.vacinas.ap3.DTO.Vacina;
 
 import java.util.ArrayList;
 import java.util.List;
