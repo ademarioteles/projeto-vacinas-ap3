@@ -23,6 +23,20 @@ public class RegistroDeVacinacaoUtils {
         return registro;
     }
 
+    public static RegistroDeVacinacao criarOutroRegistroDeVacinacaoExemplo() {
+        RegistroDeVacinacao registro = new RegistroDeVacinacao();
+        ProfissionalDeSaude profissionalDeSaude = new ProfissionalDeSaude();
+        registro.setId("1");
+        registro.setDataDeVacinacao(LocalDate.now().minusDays(1));
+        registro.setIdentificacaoDoPaciente("6539cce426ac996a47e0ce8d");
+        registro.setIdentificacaoDaVacina("652f344fe8be16628ceb8f0b");
+        registro.setIdentificacaoDaDose(1);
+        profissionalDeSaude.setNome("Maria");
+        profissionalDeSaude.setCpf("2345678");
+        registro.setProfissionalDeSaude(profissionalDeSaude);
+        return registro;
+    }
+
     public static List<RegistroDeVacinacao> criarListaRegistrosExemplo() {
         List<RegistroDeVacinacao> registros = new ArrayList<>();
         ProfissionalDeSaude profissionalDeSaude = new ProfissionalDeSaude();

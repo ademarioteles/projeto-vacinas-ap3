@@ -10,7 +10,6 @@ import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
 import feign.FeignException;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -373,10 +372,9 @@ public class RegistroDeVacinacaoService {
         return true;
     }
 
-    private void validarEdicaoRegistro(RegistroDeVacinacao registroDeVacinacao, RegistroDeVacinacao registroAtual) {
+    public void validarEdicaoRegistro(RegistroDeVacinacao registroDeVacinacao, RegistroDeVacinacao registroAtual) {
         if (registroAtual.getIdentificacaoDoPaciente().equals(registroDeVacinacao.getIdentificacaoDoPaciente()) &&
                 registroAtual.getIdentificacaoDaDose() != registroDeVacinacao.getIdentificacaoDaDose()) {
-
             throw new EditarException("Não é possível editar a dose desse registro de vacinação");
         }
         validarPacienteExistente(registroDeVacinacao.getIdentificacaoDoPaciente());
@@ -385,13 +383,13 @@ public class RegistroDeVacinacaoService {
         validarDose(registroDeVacinacao, registros);
     }
 
-    private RegistroDeVacinacao criarRegistroEditado(RegistroDeVacinacao registroDeVacinacao, String id) {
+    public RegistroDeVacinacao criarRegistroEditado(RegistroDeVacinacao registroDeVacinacao, String id) {
         RegistroDeVacinacao registroEditado = registroDeVacinacao;
         registroEditado.setId(id);
         return registroEditado;
     }
 
-    private void salvarRegistroEditado(RegistroDeVacinacao registroEditado) {
+    public void salvarRegistroEditado(RegistroDeVacinacao registroEditado) {
         registroDeVacinacaoRepository.save(registroEditado);
     }
 
