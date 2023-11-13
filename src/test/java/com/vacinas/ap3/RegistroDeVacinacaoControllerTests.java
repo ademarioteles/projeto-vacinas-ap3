@@ -132,66 +132,6 @@ class RegistroDeVacinacaoControllerTests {
         assertEquals("Erro ao buscar Vacina na API externa", exception.getMessage());
     }
 
-    // teste validarDose
-    @Test
-    void testValidarDose_ValidarPrimeiraDose() {
-        RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
-        registro.setIdentificacaoDaDose(2);
-        assertThrows(OrdemDoseInvalidaException.class, () -> registroDeVacinacaoService.validarPrimeiraDose(registro));
-    }
-
-    @Test
-    void testValidarDose_ValidarDoseExistente() {
-        RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
-        registro.setIdentificacaoDaDose(1);
-
-        List<RegistroDeVacinacao> registros = new ArrayList<>();
-        RegistroDeVacinacao registroExistente = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
-        registroExistente.setIdentificacaoDaDose(1);
-        registros.add(registroExistente);
-
-        assertThrows(RegistroExistenteException.class, () -> registroDeVacinacaoService.validarDoseExistente(registro, registros));
-    }
-
-    @Test
-    void testValidarDose_ValidarIntervaloDoses() {
-        List<RegistroDeVacinacao> registros = new ArrayList<>();
-        LocalDate dataUltimaDose = LocalDate.now().minusDays(10);
-        LocalDate dataRegistroAtual = LocalDate.now();
-
-        Vacina vacinaExemplo = VacinaUtils.criarVacinaExemplo();
-
-        when(interfaceAPI1Service.buscarVacinaDaApi1("identificacaoDaVacina"))
-                .thenReturn(ResponseEntity.ok(vacinaExemplo));
-
-        assertThrows(IntervaloInsuficienteException.class, () -> registroDeVacinacaoService.validarIntervaloDoses(dataUltimaDose, dataRegistroAtual, vacinaExemplo));
-    }
-
-    @Test
-    void testValidarDose_ValidarOrdemDose() {
-        RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
-        registro.setIdentificacaoDaDose(3);
-
-        List<RegistroDeVacinacao> registros = new ArrayList<>();
-        RegistroDeVacinacao registroAnterior = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
-        registroAnterior.setIdentificacaoDaDose(1);
-        registros.add(registroAnterior);
-
-        assertThrows(OrdemDoseInvalidaException.class, () -> registroDeVacinacaoService.validarOrdemDose(registro, registros));
-    }
-
-    @Test
-    void testValidarDose_ValidarVacinaIncompativel() {
-        RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
-        registro.setIdentificacaoDaVacina("vacina1");
-
-        List<RegistroDeVacinacao> registros = new ArrayList<>();
-        RegistroDeVacinacao registroAnterior = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
-        registroAnterior.setIdentificacaoDaVacina("vacina2");
-        registros.add(registroAnterior);
-
-        assertThrows(VacinaIncompativelException.class, () -> registroDeVacinacaoService.validarVacinaIncompativel(registro, registros));
-    }
 
     // validarPrimeiraDose
     @Test
@@ -258,18 +198,16 @@ class RegistroDeVacinacaoControllerTests {
         assertEquals(3, ultimaDose.getIdentificacaoDaDose());
     }
     //confirmacaoUltimaDose
-       /*
+
     @Test
  void testConfirmacaoUltimaDose_UltimaDoseConfirmada() {
         String idRegistro = "1"; // ID do registro para teste
         List<RegistroDeVacinacao> registros = RegistroDeVacinacaoUtils.criarListaRegistrosExemplo();
         RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
-        System.out.println(registro);
         RegistroDeVacinacaoService registroService = mock(RegistroDeVacinacaoService.class);
         when(registroService.obterRegistroDeVacinacaoPorId(idRegistro)).thenReturn(registro);
         when(registroService.obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente())).thenReturn(registros);
         when(registroService.obterUltimaDose(registros)).thenReturn(registro);
-        System.out.println(registro);
         assertTrue(registroService.confirmacaoUltimaDose(idRegistro));
     }
 
@@ -283,7 +221,7 @@ class RegistroDeVacinacaoControllerTests {
         List<RegistroDeVacinacao> registrosAnteriores = RegistroDeVacinacaoUtils.criarListaRegistrosExemplo();
 
         assertFalse(registroDeVacinacaoService.confirmacaoUltimaDose(registro.getId()));
-    }*/
+    }
 
     //validarIntervaloDoses
     @Test
@@ -753,4 +691,3 @@ class RegistroDeVacinacaoControllerTests {
 
 
 }
-
