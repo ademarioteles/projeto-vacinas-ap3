@@ -43,18 +43,18 @@ class RegistroDeVacinacaoControllerTests {
     @InjectMocks
     private RegistroDeVacinacaoService registroDeVacinacaoService;
     @Mock
+    private RegistroDeVacinacaoService registroService;
+    @Mock
     private RegistroDeVacinacaoRepository registroDeVacinacaoRepository;
 
 
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
-    }
-    @Before
-    void init(){
-        registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
         registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
+        registroService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
     }
+
 
 
     // Testes ValidarPacienteExistente
@@ -214,13 +214,11 @@ class RegistroDeVacinacaoControllerTests {
         List<RegistroDeVacinacao> registros = RegistroDeVacinacaoUtils.criarListaRegistrosExemplo();
         RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
 
-
-
         // Simula o comportamento do repositório ao chamar o método findById
-        when(registroDeVacinacaoRepository.findById(idRegistro)).thenReturn(Optional.of(Optional.of(registro).get()));
-        when(registroDeVacinacaoService.obterRegistroDeVacinacaoPorId(idRegistro)).thenReturn(registro);
-        when(registroDeVacinacaoService.obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente())).thenReturn(registros);
-        when(registroDeVacinacaoService.obterUltimaDose(registros)).thenReturn(registro);
+        when(registroDeVacinacaoRepository.findById(idRegistro)).thenReturn(Optional.of(registro));
+        when(registroService.obterRegistroDeVacinacaoPorId(idRegistro)).thenReturn(registro);
+        when(registroService.obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente())).thenReturn(registros);
+        when(registroService.obterUltimaDose(registros)).thenReturn(registro);
 
         assertTrue(registroDeVacinacaoService.confirmacaoUltimaDose(idRegistro));
     }
@@ -484,7 +482,7 @@ class RegistroDeVacinacaoControllerTests {
         when(interfaceAPI2Service.PacienteDaApi2("1"))
                 .thenReturn(ResponseEntity.ok(pacienteRetorno));
         // Criação da sua classe e injeção do repositório simulado
-    when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
+        when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
         // Simulando a resposta de busca da vacina
         Vacina vacina = VacinaUtils.criarVacinaExemplo();
         ResponseEntity<Vacina> responseEntityVacina = new ResponseEntity<>(vacina, HttpStatus.OK);
@@ -509,7 +507,7 @@ class RegistroDeVacinacaoControllerTests {
         when(interfaceAPI2Service.PacienteDaApi2("2"))
                 .thenReturn(ResponseEntity.ok(pacienteRetorno));
         // Criação da sua classe e injeção do repositório simulado
-         when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
+        when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
         // Simulando a resposta de busca da vacina
         Vacina vacina = VacinaUtils.criarVacinaExemplo();
         ResponseEntity<Vacina> responseEntityVacina = new ResponseEntity<>(vacina, HttpStatus.OK);
@@ -561,6 +559,7 @@ class RegistroDeVacinacaoControllerTests {
         // Verificando se o método save foi chamado no registroDeVacinacaoRepository
         verify(registroDeVacinacaoRepository, times(1)).save(registro);
     }
+
     /*
     // apagarRegistro
     @Test
