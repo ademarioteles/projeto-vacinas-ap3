@@ -13,6 +13,7 @@ import com.vacinas.ap3.util.PacienteUtils;
 import com.vacinas.ap3.util.RegistroDeVacinacaoUtils;
 import com.vacinas.ap3.util.VacinaUtils;
 import feign.FeignException;
+import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -41,12 +42,20 @@ class RegistroDeVacinacaoControllerTests {
 
     @InjectMocks
     private RegistroDeVacinacaoService registroDeVacinacaoService;
+    @Mock
+    private RegistroDeVacinacaoRepository registroDeVacinacaoRepository;
 
 
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
     }
+    @Before
+    void init(){
+        registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
+        registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
+    }
+
 
     // Testes ValidarPacienteExistente
     @Test
@@ -200,15 +209,20 @@ class RegistroDeVacinacaoControllerTests {
     //confirmacaoUltimaDose
 
     @Test
- void testConfirmacaoUltimaDose_UltimaDoseConfirmada() {
-        String idRegistro = "1"; // ID do registro para teste
+    void testConfirmacaoUltimaDose_UltimaDoseConfirmada() {
+        String idRegistro = "1";
         List<RegistroDeVacinacao> registros = RegistroDeVacinacaoUtils.criarListaRegistrosExemplo();
         RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
-        RegistroDeVacinacaoService registroService = mock(RegistroDeVacinacaoService.class);
-        when(registroService.obterRegistroDeVacinacaoPorId(idRegistro)).thenReturn(registro);
-        when(registroService.obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente())).thenReturn(registros);
-        when(registroService.obterUltimaDose(registros)).thenReturn(registro);
-        assertTrue(registroService.confirmacaoUltimaDose(idRegistro));
+
+
+
+        // Simula o comportamento do repositório ao chamar o método findById
+        when(registroDeVacinacaoRepository.findById(idRegistro)).thenReturn(Optional.of(Optional.of(registro).get()));
+        when(registroDeVacinacaoService.obterRegistroDeVacinacaoPorId(idRegistro)).thenReturn(registro);
+        when(registroDeVacinacaoService.obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente())).thenReturn(registros);
+        when(registroDeVacinacaoService.obterUltimaDose(registros)).thenReturn(registro);
+
+        assertTrue(registroDeVacinacaoService.confirmacaoUltimaDose(idRegistro));
     }
 
     @Test
@@ -309,12 +323,7 @@ class RegistroDeVacinacaoControllerTests {
         // Criação de uma lista de registros fictícia
         List<RegistroDeVacinacao> registrosFicticios = RegistroDeVacinacaoUtils.criarListaRegistrosExemplo();
 
-        // Simula o comportamento do repositório
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
         when(registroDeVacinacaoRepository.findAll()).thenReturn(registrosFicticios);
-
-// Criação da sua classe e injeção do repositório simulado
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Verifica se a lista é retornada corretamente
         List<RegistroDeVacinacao> resultado = registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao();
@@ -324,11 +333,7 @@ class RegistroDeVacinacaoControllerTests {
     @Test
     void testListarTodosOsRegistrosDeVacinacao_SemRegistros() {
         // Simula o comportamento do repositório retornando uma lista vazia
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
         when(registroDeVacinacaoRepository.findAll()).thenReturn(Collections.emptyList());
-
-// Criação da sua classe e injeção do repositório simulado
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Verifica se uma exceção é lançada ao tentar buscar registros quando a lista está vazia
         assertThrows(DataBaseException.class, () -> registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao());
@@ -337,11 +342,8 @@ class RegistroDeVacinacaoControllerTests {
     @Test
     void testListarTodosOsRegistrosDeVacinacao_ErroBancoDeDados() {
         // Simula o repositório lançando uma exceção
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
         when(registroDeVacinacaoRepository.findAll()).thenThrow(new DataAccessResourceFailureException("Erro ao acessar o banco de dados"));
 
-        // Criação da sua classe e injeção do repositório simulado
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Verifica se uma exceção é lançada quando ocorre um erro no acesso ao banco de dados
         assertThrows(DataAccessResourceFailureException.class, () -> registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao());
@@ -353,15 +355,11 @@ class RegistroDeVacinacaoControllerTests {
         // Criação de um ID de vacina para teste
         String idVacina = "652f344fe8be16628ceb8f0b";
 
-        // Criação de registros de vacinação simulados
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
-
         List<RegistroDeVacinacao> registros = RegistroDeVacinacaoUtils.criarListaRegistrosExemplo();
 
         // Simula o comportamento do repositório ao chamar o método findByIdentificacaoDaVacina
         when(registroDeVacinacaoRepository.findByIdentificacaoDaVacina(idVacina)).thenReturn(registros);
 
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Chama o método para buscar registros de vacinação por ID da vacina
         List<RegistroDeVacinacao> registrosEncontrados = registroDeVacinacaoService.obterRegistrosDeVacinacaoPorIdDaVacina(idVacina);
@@ -377,14 +375,11 @@ class RegistroDeVacinacaoControllerTests {
         String idRegistro = "1";
 
         // Criação de um registro de vacinação simulado
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
         RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
 
         // Simula o comportamento do repositório ao chamar o método findById
         when(registroDeVacinacaoRepository.findById(idRegistro)).thenReturn(Optional.of(registro));
 
-        // Criação da sua classe e injeção do repositório simulado
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Chama o método para obter um registro de vacinação por ID
         RegistroDeVacinacao registroEncontrado = registroDeVacinacaoService.obterRegistroDeVacinacaoPorId(idRegistro);
@@ -399,11 +394,8 @@ class RegistroDeVacinacaoControllerTests {
         String idRegistroNaoExistente = "registro_inexistente";
 
         // Simula o comportamento do repositório retornando um Optional vazio
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
         when(registroDeVacinacaoRepository.findById(idRegistroNaoExistente)).thenReturn(Optional.empty());
 
-        // Criação da sua classe e injeção do repositório simulado
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Verifica se ao tentar obter o registro não existente, a exceção é lançada
         RegistroInexistenteException exception = assertThrows(RegistroInexistenteException.class, () -> {
@@ -437,8 +429,6 @@ class RegistroDeVacinacaoControllerTests {
     void testObterNumeroDeVacinacao() {
         // Simulando estado de teste
         String estado = "SP";
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Mock para lista de registros de vacinação
         List<RegistroDeVacinacao> registros = RegistroDeVacinacaoUtils.criarListaRegistrosExemplo();
@@ -488,15 +478,13 @@ class RegistroDeVacinacaoControllerTests {
 
         // Simulando a lista de registros de vacinação
         List<RegistroDeVacinacao> registros = RegistroDeVacinacaoUtils.criarOutraListaRegistrosExemploP1();
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
         Paciente pacienteRetorno = PacienteUtils.criarUmPaciente(); // Suponhamos que você tenha uma classe Paciente
 
         // Mock da resposta da chamada externa simulando um paciente encontrado
         when(interfaceAPI2Service.PacienteDaApi2("1"))
                 .thenReturn(ResponseEntity.ok(pacienteRetorno));
         // Criação da sua classe e injeção do repositório simulado
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
-        when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
+    when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
         // Simulando a resposta de busca da vacina
         Vacina vacina = VacinaUtils.criarVacinaExemplo();
         ResponseEntity<Vacina> responseEntityVacina = new ResponseEntity<>(vacina, HttpStatus.OK);
@@ -515,15 +503,13 @@ class RegistroDeVacinacaoControllerTests {
 
         // Simulando a lista de registros de vacinação
         List<RegistroDeVacinacao> registros = RegistroDeVacinacaoUtils.criarOutraListaRegistrosExemploP2();
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
         Paciente pacienteRetorno = PacienteUtils.criarOutroPaciente(); // Suponhamos que você tenha uma classe Paciente
 
         // Mock da resposta da chamada externa simulando um paciente encontrado
         when(interfaceAPI2Service.PacienteDaApi2("2"))
                 .thenReturn(ResponseEntity.ok(pacienteRetorno));
         // Criação da sua classe e injeção do repositório simulado
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
-        when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
+         when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
         // Simulando a resposta de busca da vacina
         Vacina vacina = VacinaUtils.criarVacinaExemplo();
         ResponseEntity<Vacina> responseEntityVacina = new ResponseEntity<>(vacina, HttpStatus.OK);
@@ -549,7 +535,6 @@ class RegistroDeVacinacaoControllerTests {
         when(interfaceAPI2Service.PacienteDaApi2("2"))
                 .thenReturn(ResponseEntity.ok(pacienteRetorno));
         // Criação da sua classe e injeção do repositório simulado
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
         when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
         // Simulando a resposta de busca da vacina
         Vacina vacina = VacinaUtils.criarVacinaExemplo();
@@ -564,14 +549,11 @@ class RegistroDeVacinacaoControllerTests {
 
     @Test
     public void testSalvarRegistroEditado() {
-        // Criando um mock para registroDeVacinacaoRepository
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
 
         // Criando um objeto de registro para testar
         RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
 
         // Criando uma instância da classe que contém o método a ser testado
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Chamar o método que queremos testar
         registroDeVacinacaoService.salvarRegistroEditado(registro);
@@ -591,7 +573,6 @@ class RegistroDeVacinacaoControllerTests {
         when(registroDeVacinacaoService.confirmacaoUltimaDose("ID_VALIDO")).thenReturn(true);
         when(registroDeVacinacaoRepository.findById("ID_VALIDO")).thenReturn(Optional.of(registro));
 
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Chamar o método que queremos testar
         Boolean resultado = registroDeVacinacaoService.apagarRegistro("ID_VALIDO");
@@ -608,8 +589,6 @@ class RegistroDeVacinacaoControllerTests {
 
         // Criando um mock para registroDeVacinacaoRepository
         RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
-
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Chamar o método que queremos testar e capturar a exceção
         ApagarException exception = assertThrows(ApagarException.class, () -> {
@@ -633,8 +612,6 @@ class RegistroDeVacinacaoControllerTests {
         // Criar um mock da instância da interface do repositório (ou uma instância real, se aplicável)
         RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
 
-        // Criar uma instância do RegistroDeVacinacaoService
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Chamar o método que queremos testar
         RegistroDeVacinacao registroEditado = registroDeVacinacaoService.criarRegistroEditado(registro, novoId);
@@ -657,7 +634,6 @@ class RegistroDeVacinacaoControllerTests {
         RegistroDeVacinacao registroAtual = RegistroDeVacinacaoUtils.criarOutroRegistroDeVacinacaoExemplo();
 
         RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
         // Configuração do mock da API externa 1 (vacina)
         when(interfaceAPI1Service.buscarVacinaDaApi1(registro.getIdentificacaoDaVacina()))
                 .thenReturn(ResponseEntity.ok(new Vacina()));
@@ -676,9 +652,6 @@ class RegistroDeVacinacaoControllerTests {
 
         RegistroDeVacinacao registroAtual = RegistroDeVacinacaoUtils.criarOutroRegistroDeVacinacaoExemplo();
         Vacina vacina = VacinaUtils.criarVacinaExemplo();
-
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
-        RegistroDeVacinacaoService registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
 
         // Forçar a identificação da dose ser a mesma
         registro.setIdentificacaoDaDose(2);
