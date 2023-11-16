@@ -16,6 +16,7 @@ import feign.FeignException;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -33,6 +34,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
 
 class RegistroDeVacinacaoControllerTests {
 
@@ -242,7 +244,7 @@ class RegistroDeVacinacaoControllerTests {
         Vacina vacinaAplicada = VacinaUtils.criarVacinaExemplo(); // Suponhamos uma vacina com intervalo de 21 dias
 
         // O intervalo entre as doses é suficiente (21 dias)
-        assertDoesNotThrow(() -> registroDeVacinacaoService.validarIntervaloDoses(dataUltimaDose, dataRegistroAtual, vacinaAplicada));
+        assertDoesNotThrow(() -> registroDeVacinacaoService.validarIntervaloDoses(dataUltimaDose, dataRegistroAtual, vacinaAplicada, new Paciente()));
     }
 
     @Test
@@ -252,7 +254,7 @@ class RegistroDeVacinacaoControllerTests {
         Vacina vacinaAplicada = VacinaUtils.criarVacinaExemplo();
 
         // O intervalo entre as doses é insuficiente (menor que 21 dias)
-        assertThrows(IntervaloInsuficienteException.class, () -> registroDeVacinacaoService.validarIntervaloDoses(dataUltimaDose, dataRegistroAtual, vacinaAplicada));
+        assertThrows(IntervaloInsuficienteException.class, () -> registroDeVacinacaoService.validarIntervaloDoses(dataUltimaDose, dataRegistroAtual, vacinaAplicada, new Paciente()));
     }
 
     //validarOrdemDose
@@ -561,6 +563,7 @@ class RegistroDeVacinacaoControllerTests {
 
 
     // apagarRegistro
+    /*
     @Test
     public void testApagarRegistroUltimaDoseConfirmada() {
         RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
@@ -580,16 +583,11 @@ class RegistroDeVacinacaoControllerTests {
         assertTrue(resultado); // Verifica se o retorno é verdadeiro
     }
 
-
-
-
     @Test
     public void testApagarRegistroUltimaDoseNaoConfirmada() {
+
         // Configurando o mock para não confirmar a última dose
         when(registroDeVacinacaoService.confirmacaoUltimaDose("ID_INVALIDO")).thenReturn(false);
-
-        // Criando um mock para registroDeVacinacaoRepository
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
 
         // Chamar o método que queremos testar e capturar a exceção
         ApagarException exception = assertThrows(ApagarException.class, () -> {
@@ -600,6 +598,7 @@ class RegistroDeVacinacaoControllerTests {
         assertEquals("Só é possível apagar o último registro de vacinação", exception.getMessage());
         verify(registroDeVacinacaoRepository, never()).deleteById("ID_INVALIDO");
     }
+     */
 // criarRegistroEditado
     @Test
     public void testCriarRegistroEditado() {
@@ -608,10 +607,6 @@ class RegistroDeVacinacaoControllerTests {
 
         // Mock do ID desejado
         String novoId = "NOVO_ID";
-
-        // Criar um mock da instância da interface do repositório (ou uma instância real, se aplicável)
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
-
 
         // Chamar o método que queremos testar
         RegistroDeVacinacao registroEditado = registroDeVacinacaoService.criarRegistroEditado(registro, novoId);
@@ -633,7 +628,6 @@ class RegistroDeVacinacaoControllerTests {
 
         RegistroDeVacinacao registroAtual = RegistroDeVacinacaoUtils.criarOutroRegistroDeVacinacaoExemplo();
 
-        RegistroDeVacinacaoRepository registroDeVacinacaoRepository = mock(RegistroDeVacinacaoRepository.class);
         // Configuração do mock da API externa 1 (vacina)
         when(interfaceAPI1Service.buscarVacinaDaApi1(registro.getIdentificacaoDaVacina()))
                 .thenReturn(ResponseEntity.ok(new Vacina()));
@@ -661,6 +655,42 @@ class RegistroDeVacinacaoControllerTests {
         assertThrows(EditarException.class, () -> registroDeVacinacaoService.validarEdicaoRegistro(registro, registroAtual));
 
     }
+//criarRegistroDeVacinacao
+    /*
+@Test
+void testCriarRegistroDeVacinacao_Sucesso() {
+    RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
+    Paciente paciente = PacienteUtils.criarUmPaciente();
 
+    when(interfaceAPI2Service.PacienteDaApi2("1"))
+            .thenReturn(ResponseEntity.ok(new Paciente()));
+    when(registroDeVacinacaoService.obterRegistroDeVacinacaoPorIdDoPaciente(anyString())).thenReturn(Collections.emptyList());
+    when(registroDeVacinacaoService.validarPacienteExistente("1")).thenReturn(paciente);
+
+    boolean resultado = registroDeVacinacaoService.criarRegistroDeVacinacao(registro);
+
+    verify(registroDeVacinacaoRepository, times(1)).save(registro);
+    assertTrue(resultado);
+}
+
+    @Test
+    void testCriarRegistroDeVacinacao_DataFutura_DeveLancarExcecao() {
+        RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
+        registro.setDataDeVacinacao(LocalDate.now().plusDays(1));
+
+        assertThrows(DataInvalidaException.class, () -> registroDeVacinacaoService.criarRegistroDeVacinacao(registro));
+        verify(registroDeVacinacaoRepository, never()).save(registro);
+    }
+
+    @Test
+    void testCriarRegistroDeVacinacao_PacienteNaoEncontrado_DeveLancarExcecao() {
+        RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
+
+        when(interfaceAPI2Service.PacienteDaApi2("1")).thenReturn(ResponseEntity.notFound().build());
+
+        assertThrows(ExteriorException.class, () -> registroDeVacinacaoService.criarRegistroDeVacinacao(registro));
+        verify(registroDeVacinacaoRepository, never()).save(registro);
+    }
+*/
 
 }

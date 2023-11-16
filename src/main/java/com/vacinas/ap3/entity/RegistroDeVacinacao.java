@@ -3,6 +3,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -16,7 +17,7 @@ public class RegistroDeVacinacao {
     @Id
     private String id;
     @NotNull(message = "A data de vacinação não pode estar nulo.")
-    @NotEmpty(message = "A data de vacinação não pode estar vazio.")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dataDeVacinacao;
     @NotNull(message = "A Identificação do paciente não pode estar nulo.")
     @NotEmpty(message = "A Identificação do paciente não pode estar vazio.")
@@ -25,7 +26,6 @@ public class RegistroDeVacinacao {
     @NotEmpty(message = "A Identificação da vacina não pode estar vazio.")
     private String identificacaoDaVacina; // Pode ser o ID da vacina ou outro identificador único
     @NotNull(message = "A Identificação da dose não pode estar nulo.")
-    @NotEmpty(message = "A Identificação da dose não pode estar vazio.")
     private int identificacaoDaDose;
     @Valid
     private ProfissionalDeSaude profissionalDeSaude;

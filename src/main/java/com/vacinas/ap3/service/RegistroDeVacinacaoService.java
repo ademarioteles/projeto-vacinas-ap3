@@ -67,13 +67,12 @@ public class RegistroDeVacinacaoService {
 
         validarDoseExistente(registro, registros);
         Vacina vacinaAplicada = validarVacinaExistente(registro.getIdentificacaoDaVacina());
-
+        Paciente paciente = validarPacienteExistente(registro.getIdentificacaoDoPaciente());
         LocalDate dataUltimaDose = obterDataUltimaDose(registros);
         LocalDate dataRegistroAtual = registro.getDataDeVacinacao();
-        validarIntervaloDoses(dataUltimaDose, dataRegistroAtual, vacinaAplicada);
-
+        validarNumeroDoses(vacinaAplicada, registro.getIdentificacaoDaDose());
+        validarIntervaloDoses(dataUltimaDose, dataRegistroAtual, vacinaAplicada, paciente);
         validarOrdemDose(registro, registros);
-
         validarVacinaIncompativel(registro, registros);
     }
 
@@ -90,10 +89,26 @@ public class RegistroDeVacinacaoService {
             }
         }
     }
-    public void validarIntervaloDoses(LocalDate dataUltimaDose, LocalDate dataRegistroAtual, Vacina vacinaAplicada) {
+    public void validarIntervaloDoses(LocalDate dataUltimaDose, LocalDate dataRegistroAtual, Vacina vacinaAplicada, Paciente paciente) {
         long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
+        LocalDate dataAlvo = ChronoUnit.DAYS.addTo(dataUltimaDose, vacinaAplicada.getIntervalo_doses());
+        // Define a custom date format
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        // Format the date using the defined format
+        String DataUltimaDoseFormat = dataUltimaDose.format(formatter);
+        String dataAlvoFormat = dataAlvo.format(formatter);
+
         if (intervaloDias < vacinaAplicada.getIntervalo_doses()) {
-            throw new IntervaloInsuficienteException("Intervalo insuficiente entre doses.");
+            throw new IntervaloInsuficienteException("O paciente " + paciente.getNome() + " recebeu uma dose de" + vacinaAplicada.getNome() + " no dia "+ DataUltimaDoseFormat +
+                    ". A próxima dose deverá ser aplicada a partir do dia " + dataAlvoFormat);
+        }
+    }
+    public void validarNumeroDoses(Vacina vacina, int identificacaoDaDose) {
+        int numeroDosesRegistradas = vacina.getNumero_de_doses();
+
+        if (identificacaoDaDose > numeroDosesRegistradas) {
+            throw new MaximoDoseException("Número de doses inválido para a vacina " + vacina.getNome() +
+                    ". O número máximo de doses é " + numeroDosesRegistradas);
         }
     }
     public void validarOrdemDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {

@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -23,9 +24,9 @@ public class RegistroDeVacinacaoController {
     }
 
     @PostMapping("/cadastrar")
-    public ResponseEntity criarRegistroDeVacinacao(@RequestBody RegistroDeVacinacao registroDeVacinacao) {
+    public ResponseEntity criarRegistroDeVacinacao(@RequestBody @Valid RegistroDeVacinacao registroDeVacinacao) {
         try {
-            if (registroDeVacinacaoService.criarRegistroDeVacinacao(registroDeVacinacao) == true) {
+            if (registroDeVacinacaoService.criarRegistroDeVacinacao(registroDeVacinacao)) {
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(new Mensagem("Registro cadastrado com sucesso!"));
@@ -43,9 +44,9 @@ public class RegistroDeVacinacaoController {
     }
 
     @PostMapping("/editar/{id}")
-    public ResponseEntity editarRegistroDeVacinacao(@RequestBody RegistroDeVacinacao registroDeVacinacao, @PathVariable String id) {
+    public ResponseEntity editarRegistroDeVacinacao(@RequestBody @Valid RegistroDeVacinacao registroDeVacinacao, @PathVariable String id) {
         try {
-            if (registroDeVacinacaoService.editarRegistroDeVacinacao(registroDeVacinacao, id) == true) {
+            if (registroDeVacinacaoService.editarRegistroDeVacinacao(registroDeVacinacao, id)) {
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(new Mensagem("Registro editado com sucesso!"));
@@ -65,7 +66,7 @@ public class RegistroDeVacinacaoController {
     @PatchMapping("/editar/{id}")
     public ResponseEntity editarRegistroDeVacinacaoParcial(@PathVariable String id, @RequestBody Map<String, Object> atualizacao) {
         try {
-            if (registroDeVacinacaoService.editarRegistroDeVacinacaoParcial(id, atualizacao) == true) {
+            if (registroDeVacinacaoService.editarRegistroDeVacinacaoParcial(id, atualizacao)) {
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(new Mensagem("Registro editado com sucesso!"));

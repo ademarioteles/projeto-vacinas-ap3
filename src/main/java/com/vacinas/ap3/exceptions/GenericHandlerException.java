@@ -99,6 +99,12 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
         LOGGER.info("Tratamentação de exceção DoseMaiorException: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(MaximoDoseException.class)
+    protected ResponseEntity handleException(MaximoDoseException e) {
+        Mensagem mensagem = new Mensagem(e.getMessage());
+        LOGGER.info("Tratamentação de exceção DoseMaiorException: " + mensagem);
+        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+    }
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         List<Mensagem> message = new ArrayList<>();
@@ -107,5 +113,11 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
             LOGGER.info("Tratamento de Exceção MethodArgumentNotValidException: " + error.getDefaultMessage());
         }
         return handleExceptionInternal(ex, message, headers, HttpStatus.BAD_REQUEST, request);
+    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleException(Exception e) {
+        String errorMessage = "Ocorreu um erro na aplicação. Nossa equipe de TI já foi notificada e em breve nossos serviços estarão reestabelecidos. Para maiores informações entre em contato em 4002-8922. Lamentamos o ocorrido!";
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new Mensagem(errorMessage));
     }
 }
