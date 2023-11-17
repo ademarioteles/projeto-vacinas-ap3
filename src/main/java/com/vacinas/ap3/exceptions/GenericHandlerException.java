@@ -24,13 +24,13 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
     protected ResponseEntity handleException(ExteriorException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção externa: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
     @ExceptionHandler(DataBaseException.class)
     protected ResponseEntity handleException(DataBaseException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção banco de dados: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
     @ExceptionHandler(RegistroExistenteException.class)
     protected ResponseEntity handleException(RegistroExistenteException e) {
@@ -55,61 +55,61 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
     protected ResponseEntity handleException(OrdemDoseInvalidaException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção OrdemDoseInvalidaException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(IntervaloInsuficienteException.class)
     protected ResponseEntity handleException(IntervaloInsuficienteException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção IntervaloInsuficienteException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ApagarException.class)
     protected ResponseEntity handleException(ApagarException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção ApagarException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EditarException.class)
     protected ResponseEntity handleException(EditarException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção EditarException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DataInvalidaException.class)
     protected ResponseEntity handleException(DataInvalidaException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção DataInvalidaException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(VacinaIncompativelException.class)
     protected ResponseEntity handleException(VacinaIncompativelException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção VacinaIncompativelException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DoseMaiorException.class)
     protected ResponseEntity handleException(DoseMaiorException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção DoseMaiorException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler(MaximoDoseException.class)
     protected ResponseEntity handleException(MaximoDoseException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção DoseMaiorException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler(ChaveInvalidaException.class)
     protected ResponseEntity handleException(ChaveInvalidaException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção ChaveInvalidaException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
