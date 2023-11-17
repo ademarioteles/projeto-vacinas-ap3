@@ -4,7 +4,6 @@ import com.vacinas.ap3.entity.Mensagem;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

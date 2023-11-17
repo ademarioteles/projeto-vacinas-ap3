@@ -1,15 +1,18 @@
 package com.vacinas.ap3;
 
+import com.vacinas.ap3.DTO.Vacina;
 import com.vacinas.ap3.controller.RegistroDeVacinacaoController;
 import com.vacinas.ap3.controller.VacinasAplicadasController;
 import com.vacinas.ap3.entity.Mensagem;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
+import com.vacinas.ap3.entity.RegistroDeVacinacaoDoses;
 import com.vacinas.ap3.exceptions.EditarException;
 import com.vacinas.ap3.exceptions.RegistroInexistenteException;
 import com.vacinas.ap3.service.InterfaceAPI1Service;
 import com.vacinas.ap3.service.InterfaceAPI2Service;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
 import com.vacinas.ap3.util.RegistroDeVacinacaoUtils;
+import com.vacinas.ap3.util.VacinaUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,8 +37,6 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 public class VacinasAplicadasControllerTests {
 
-    @Autowired
-    private VacinasAplicadasController vacinasAplicadasController;
     @InjectMocks
     private VacinasAplicadasController vacinasAplicadasControllerInject;
 
@@ -45,22 +46,15 @@ public class VacinasAplicadasControllerTests {
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
-        when(registroDeVacinacaoService.criarRegistroDeVacinacao(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo())).thenReturn(true);
-        when(registroDeVacinacaoService.editarRegistroDeVacinacao(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo(), "1")).thenReturn(true);
-        when(registroDeVacinacaoService.obterRegistroDeVacinacaoPorId("1")).thenReturn(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo());
-
     }
 
     @Test
     void obterQuantidadeDeVacinacaoSemEstadoSucessoController() {
-        List<RegistroDeVacinacao> registrosMock = Arrays.asList(
-                RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo(),
-                RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo()
-        );
+        List<RegistroDeVacinacao> registrosMock = RegistroDeVacinacaoUtils.criarOutraListaRegistrosExemploP1();
 
         when(registroDeVacinacaoService.obterNumeroDeVacinacao(null)).thenReturn(registrosMock.size());
 
-        ResponseEntity<Integer> respostaEsperada = ResponseEntity.status(200).body(2);
+        ResponseEntity<Integer> respostaEsperada = ResponseEntity.status(200).body(3);
         ResponseEntity<Integer> respostaReal = vacinasAplicadasControllerInject.obterQuantidadeDeVacinacao(null);
 
         assertEquals(respostaEsperada, respostaReal);
@@ -68,11 +62,7 @@ public class VacinasAplicadasControllerTests {
 
     @Test
     void obterQuantidadeDeVacinacaoComEstadoSucessoController() {
-        List<RegistroDeVacinacao> registrosMock = Arrays.asList(
-                RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo(),
-                RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo(),
-                RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo()
-        );
+        List<RegistroDeVacinacao> registrosMock = RegistroDeVacinacaoUtils.criarOutraListaRegistrosExemploP1();
 
         when(registroDeVacinacaoService.obterNumeroDeVacinacao("SP")).thenReturn(registrosMock.size());
 
@@ -82,5 +72,58 @@ public class VacinasAplicadasControllerTests {
         assertEquals(respostaEsperada, respostaReal);
     }
 
+    @Test
+    void obterDosesAplicadasSemFiltroSucessoController() {
+        List<RegistroDeVacinacaoDoses> registros = Arrays.asList(
+                new RegistroDeVacinacaoDoses("FabricanteExemplo", "VacinaExemplo", 2)
+        );
+
+        when(registroDeVacinacaoService.obterDosesAplicadas(null, null)).thenReturn(registros);
+
+        ResponseEntity<List<RegistroDeVacinacaoDoses>> repostaEsperada = ResponseEntity.status(200)
+                .body(Arrays.asList(
+                        new RegistroDeVacinacaoDoses("FabricanteExemplo", "VacinaExemplo", 2)
+                ));
+
+        ResponseEntity<List<RegistroDeVacinacaoDoses>> respostaReal = vacinasAplicadasControllerInject.obterDosesAplicadas(null, null);
+
+        assertEquals(repostaEsperada, respostaReal);
+    }
+
+    @Test
+    void obterDosesAplicadasComFabricanteSucessoController() {
+        List<RegistroDeVacinacaoDoses> registros = Arrays.asList(
+                        new RegistroDeVacinacaoDoses("FabricanteExemplo", "VacinaExemplo", 2)
+                );
+
+        when(registroDeVacinacaoService.obterDosesAplicadas(null, "Fabricante")).thenReturn(registros);
+
+        ResponseEntity<List<RegistroDeVacinacaoDoses>> repostaEsperada = ResponseEntity.status(200)
+                .body(Arrays.asList(
+                        new RegistroDeVacinacaoDoses("FabricanteExemplo", "VacinaExemplo", 2)
+                ));
+
+        ResponseEntity<List<RegistroDeVacinacaoDoses>> respostaReal = vacinasAplicadasControllerInject.obterDosesAplicadas(null, "Fabricante");
+
+        assertEquals(repostaEsperada, respostaReal);
+    }
+
+    @Test
+    void obterDosesAplicadasComEstadoEFabricanteSucessoController() {
+        List<RegistroDeVacinacaoDoses> registros = Arrays.asList(
+                new RegistroDeVacinacaoDoses("FabricanteExemplo", "VacinaExemplo", 2)
+        );
+
+        when(registroDeVacinacaoService.obterDosesAplicadas("BA", "Fabricante")).thenReturn(registros);
+
+        ResponseEntity<List<RegistroDeVacinacaoDoses>> repostaEsperada = ResponseEntity.status(200)
+                .body(Arrays.asList(
+                        new RegistroDeVacinacaoDoses("FabricanteExemplo", "VacinaExemplo", 2)
+                ));
+
+        ResponseEntity<List<RegistroDeVacinacaoDoses>> respostaReal = vacinasAplicadasControllerInject.obterDosesAplicadas("BA", "Fabricante");
+
+        assertEquals(repostaEsperada, respostaReal);
+    }
 
 }

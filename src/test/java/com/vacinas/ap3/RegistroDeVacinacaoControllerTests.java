@@ -37,10 +37,7 @@ public class RegistroDeVacinacaoControllerTests {
 
     @Autowired
     private RegistroDeVacinacaoController registroDeVacinacaoController;
-    @Mock
-    private InterfaceAPI2Service interfaceAPI2Service;
-    @Mock
-    private InterfaceAPI1Service interfaceAPI1Service;
+
     @InjectMocks
     private RegistroDeVacinacaoController registroDeVacinacaoControllerInject;
 

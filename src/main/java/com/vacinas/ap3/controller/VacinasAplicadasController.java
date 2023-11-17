@@ -1,11 +1,7 @@
 package com.vacinas.ap3.controller;
 
-import com.vacinas.ap3.entity.Mensagem;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoDoses;
-import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
