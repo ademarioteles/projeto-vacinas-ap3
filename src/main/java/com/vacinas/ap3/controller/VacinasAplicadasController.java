@@ -32,13 +32,6 @@ public class VacinasAplicadasController {
 
     @GetMapping("")
     public ResponseEntity<List<RegistroDeVacinacaoDoses>> obterDosesAplicadas(@RequestParam(name = "estado", required = false) String estado, @RequestParam(name = "fabricantes", required = false) String fabricantes) {
-        try {
             return ResponseEntity.status(200).body(registroDeVacinacaoService.obterDosesAplicadas(estado, fabricantes));
-        } catch (ExteriorException |
-                 DataBaseException e) {
-            // Lidar com exceções
-            throw new DataBaseException("Erro ao listar registros de vacinação ");
-
-        }
     }
 }

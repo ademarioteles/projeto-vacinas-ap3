@@ -1,11 +1,9 @@
 package com.vacinas.ap3;
 
-import com.vacinas.ap3.DTO.Paciente;
+
 import com.vacinas.ap3.controller.RegistroDeVacinacaoController;
 import com.vacinas.ap3.entity.Mensagem;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
-import com.vacinas.ap3.exceptions.ApagarException;
-import com.vacinas.ap3.exceptions.ChaveInvalidaException;
 import com.vacinas.ap3.exceptions.EditarException;
 import com.vacinas.ap3.exceptions.RegistroInexistenteException;
 import com.vacinas.ap3.service.InterfaceAPI1Service;
@@ -31,7 +29,6 @@ import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -83,7 +80,7 @@ public class RegistroDeVacinacaoControllerTests {
     void editarRegistroDeVacinacaoTestErrorController(){
         RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
         registro.setIdentificacaoDaVacina("");
-        Assertions.assertThrows(ConstraintViolationException.class, () -> registroDeVacinacaoController.editarRegistroDeVacinacao(registro, anyString()));
+        Assertions.assertThrows(ConstraintViolationException.class, () -> registroDeVacinacaoController.editarRegistroDeVacinacao(registro, "1"));
     }
     @Test
     void editarRegistroDeVacinacaoFalhaAoEditarController() {
@@ -117,7 +114,7 @@ public class RegistroDeVacinacaoControllerTests {
 
         // Executando o método do controlador e capturando a exceção
         EditarException exception = assertThrows(EditarException.class,
-                () -> registroDeVacinacaoController.editarRegistroDeVacinacao(registroExistente, "2"));
+                () -> registroDeVacinacaoControllerInject.editarRegistroDeVacinacao(registroExistente, "2"));
 
         // Verificando se a mensagem da exceção é a esperada
         assertEquals("Só é possível editar o último registro de vacinação", exception.getMessage());
