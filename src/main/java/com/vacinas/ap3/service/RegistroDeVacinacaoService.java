@@ -376,6 +376,8 @@ public class RegistroDeVacinacaoService {
                     itens.add("cpf");
                     profissionalDeSaude.setCpf((String) value);
                     break;
+                default:
+                    throw new ChaveInvalidaException("Chave de atualização inválida: " + key);
             }
         }
         for (String elemento : itens) {

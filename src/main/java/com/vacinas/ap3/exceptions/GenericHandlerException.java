@@ -105,6 +105,12 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
         LOGGER.info("Tratamentação de exceção DoseMaiorException: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(ChaveInvalidaException.class)
+    protected ResponseEntity handleException(ChaveInvalidaException e) {
+        Mensagem mensagem = new Mensagem(e.getMessage());
+        LOGGER.info("Tratamentação de exceção ChaveInvalidaException: " + mensagem);
+        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
+    }
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         List<Mensagem> message = new ArrayList<>();

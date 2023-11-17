@@ -1,11 +1,8 @@
 package com.vacinas.ap3;
 
-import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.controller.RegistroDeVacinacaoController;
 import com.vacinas.ap3.entity.Mensagem;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
-import com.vacinas.ap3.exceptions.ApagarException;
-import com.vacinas.ap3.exceptions.ChaveInvalidaException;
 import com.vacinas.ap3.exceptions.EditarException;
 import com.vacinas.ap3.exceptions.RegistroInexistenteException;
 import com.vacinas.ap3.service.InterfaceAPI1Service;
@@ -25,18 +22,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import javax.validation.ConstraintViolationException;
-
 import java.time.LocalDate;
 import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-public class RegistroDeVacinacaoControllerTests {
+public class VacinasAplicadasControllerTests {
 
     @Autowired
     private RegistroDeVacinacaoController registroDeVacinacaoController;

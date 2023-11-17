@@ -27,15 +27,7 @@ public class VacinasAplicadasController {
 
     @GetMapping("/quantidade")
     public ResponseEntity<Integer> obterQuantidadeDeVacinacao(@RequestParam(name = "estado", required = false) String estado) {
-        try {
             return ResponseEntity.status(200).body(registroDeVacinacaoService.obterNumeroDeVacinacao(estado));
-        } catch (ExteriorException |
-                 DataBaseException e) {
-            // Lidar com exceções
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(-1); // or any suitable default value
-        }
     }
 
     @GetMapping("")
