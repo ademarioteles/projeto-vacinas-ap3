@@ -1,6 +1,5 @@
 package com.vacinas.ap3.controller;
 
-import com.vacinas.ap3.entity.Mensagem;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;

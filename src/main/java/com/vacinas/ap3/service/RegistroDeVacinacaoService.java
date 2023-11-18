@@ -13,10 +13,10 @@ import com.vacinas.ap3.util.RegistroDeVacinacaoUtils;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -29,16 +29,15 @@ import java.util.stream.Collectors;
 @Service
 public class RegistroDeVacinacaoService {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericHandlerException.class);
+    @Autowired
     private RegistroDeVacinacaoRepository registroDeVacinacaoRepository;
+
+    @Autowired
     public InterfaceAPI2Service interfaceAPI2Service;
+
+    @Autowired
     public InterfaceAPI1Service interfaceAPI1Service;
-
-    public RegistroDeVacinacaoService(RegistroDeVacinacaoRepository registroDeVacinacaoRepository, InterfaceAPI2Service interfaceAPI2Service, InterfaceAPI1Service interfaceAPI1Service) {
-        this.registroDeVacinacaoRepository = registroDeVacinacaoRepository;
-        this.interfaceAPI2Service = interfaceAPI2Service;
-        this.interfaceAPI1Service = interfaceAPI1Service;
-    }
-
+    //Valida a existência de um paciente com base na identificação fornecida, consultando uma API externa
     public Paciente validarPacienteExistente(String identificacaoDoPaciente) {
         try {
             ResponseEntity<Paciente> response = interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente);
@@ -51,7 +50,7 @@ public class RegistroDeVacinacaoService {
             throw new ExteriorException("Erro ao buscar paciente na API externa");
         }
     }
-
+    //Valida a existência de uma vacina com base na identificação fornecida, consultando uma API externa.
     public Vacina validarVacinaExistente(String identificacaoDaVacina) {
         try {
             ResponseEntity<Vacina> response = interfaceAPI1Service.buscarVacinaDaApi1(identificacaoDaVacina);
@@ -64,7 +63,7 @@ public class RegistroDeVacinacaoService {
             throw new ExteriorException("Erro ao buscar Vacina na API externa");
         }
     }
-
+    //Organiza a chamada de diversos metodos, com o intuito de validar se a dose do registro é valida
     private void validarDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
         if (registros.isEmpty() || registro.getIdentificacaoDaDose() == 1) {
             validarPrimeiraDose(registro);
@@ -81,13 +80,13 @@ public class RegistroDeVacinacaoService {
         validarOrdemDose(registro, registros);
         validarVacinaIncompativel(registro, registros);
     }
-
+    //joga um excessão caso a dose cadastrada não for a primeira
     public void validarPrimeiraDose(RegistroDeVacinacao registro) {
         if (registro.getIdentificacaoDaDose() != 1) {
             throw new OrdemDoseInvalidaException("Nenhum registro de vacinação encontrado, essa dose deverá ser a primeira");
         }
     }
-
+    //verifica se ja existe uma dose identica cadastrada no banco de dados
     public void validarDoseExistente(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
         for (RegistroDeVacinacao registroExistente : registros) {
             if (registroExistente.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose() && registroExistente.getIdentificacaoDaVacina() == registro.getIdentificacaoDaVacina()) {
@@ -95,6 +94,7 @@ public class RegistroDeVacinacaoService {
             }
         }
     }
+    //verifica se o intervalo entre doses doses está correto, comparando a data da ultima vacinação com o ultimo registro
     public void validarIntervaloDoses(LocalDate dataUltimaDose, LocalDate dataRegistroAtual, Vacina vacinaAplicada, Paciente paciente) {
         long intervaloDias = ChronoUnit.DAYS.between(dataUltimaDose, dataRegistroAtual);
         LocalDate dataAlvo = ChronoUnit.DAYS.addTo(dataUltimaDose, vacinaAplicada.getIntervalo_doses());
@@ -109,6 +109,7 @@ public class RegistroDeVacinacaoService {
                     ". A próxima dose deverá ser aplicada a partir do dia " + dataAlvoFormat);
         }
     }
+    //verifica se o numero da dose que está sendo cadastrada não é maior que o permitido pela a vacina
     public void validarNumeroDoses(Vacina vacina, int identificacaoDaDose) {
         int numeroDosesRegistradas = vacina.getNumero_de_doses();
 
@@ -117,6 +118,7 @@ public class RegistroDeVacinacaoService {
                     ". O número máximo de doses é " + numeroDosesRegistradas);
         }
     }
+    //garante que as doses só possam ser aplicadas em ordem crescente
     public void validarOrdemDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
         int doseAnterior = registros.isEmpty() ? 0 : registros.get(registros.size() - 1).getIdentificacaoDaDose();
         int novaDose = registro.getIdentificacaoDaDose();
@@ -125,25 +127,26 @@ public class RegistroDeVacinacaoService {
             throw new OrdemDoseInvalidaException("Ordem de Vacinação Inválida");
         }
     }
+    //verifica se a vacina do registro atual é compativel com o historico de registros
     public void validarVacinaIncompativel(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
         if (!registro.getIdentificacaoDaVacina().equals(registros.get(0).getIdentificacaoDaVacina())) {
             throw new VacinaIncompativelException("Vacina diferente das doses anteriores.");
         }
     }
-
+    //obtem a data da ultima dose com base dos registros anteriores
     public LocalDate obterDataUltimaDose(List<RegistroDeVacinacao> registros) {
         return registros.stream()
                 .map(RegistroDeVacinacao::getDataDeVacinacao)
                 .max(Comparator.naturalOrder())
                 .orElse(LocalDate.MIN);
     }
-
+    //obtem o ultimo registro de vacinação com base numa lista
     public RegistroDeVacinacao obterUltimaDose(List<RegistroDeVacinacao> registros) {
         return registros.stream()
                 .max(Comparator.comparingInt(RegistroDeVacinacao::getIdentificacaoDaDose))
                 .orElse(null);
     }
-
+    //confirma se a dose com o respectivo id foi a ultima dose aplicada
     public boolean confirmacaoUltimaDose(String id) {
         RegistroDeVacinacao registro = obterRegistroDeVacinacaoPorId(id);
         List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente());
@@ -151,13 +154,13 @@ public class RegistroDeVacinacaoService {
 
         return ultimoRegistro.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose();
     }
-
+    //garante que não seja cadastrado um registro com data no futuro
     public void validarDataDeVacinacao(LocalDate data) {
         if (data.isAfter(LocalDate.now())) {
             throw new DataInvalidaException("Não é possivel ter um registro com uma data no futuro.");
         }
     }
-
+    //administra as chamadas dos metodos que irão permitir ou não que o registro seja concluido
     public RegistroDeVacinacao  criarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao) {
         validarDataDeVacinacao(registroDeVacinacao.getDataDeVacinacao());
         validarPacienteExistente(registroDeVacinacao.getIdentificacaoDoPaciente());
@@ -168,7 +171,7 @@ public class RegistroDeVacinacaoService {
         LOGGER.info("Registro de vacinação criado" + registroDeVacinacao);
         return registroDeVacinacao;
     }
-
+    //busca no banco de dados todos os registros de vacinação
     public List<RegistroDeVacinacao> listarTodosOsRegistrosDeVacinacao() {
             List<RegistroDeVacinacao> lista = registroDeVacinacaoRepository.findAll();
             if (!lista.isEmpty()) {
@@ -176,11 +179,11 @@ public class RegistroDeVacinacaoService {
             }
             throw new DataBaseException("Não há registros de vacinação válidos (listarTodosOsRegistrosDeVacinacao)");
     }
-
+    //busca no banco de dados todos os registros de vacinação com uma vacina especifica
     public List<RegistroDeVacinacao> obterRegistrosDeVacinacaoPorIdDaVacina(String id) {
         return registroDeVacinacaoRepository.findByIdentificacaoDaVacina(id);
     }
-
+    //busca no banco de dados o registro de vacinação com um id especifico
     public RegistroDeVacinacao obterRegistroDeVacinacaoPorId(String id) {
         Optional<RegistroDeVacinacao> registro = registroDeVacinacaoRepository.findById(id);
         if (!registro.isEmpty()) {
@@ -189,7 +192,7 @@ public class RegistroDeVacinacaoService {
             throw new RegistroInexistenteException("Registro não encontrado");
         }
     }
-
+    //coleta os cados de vacinação e cria um objeto com os dados coletados
     public RegistroDeVacinacaoResumido obterRegistroResumidoDeVacinacaoPorIdDoPaciente(String id) {
         Paciente paciente = validarPacienteExistente(id);
         Endereco endereco = paciente.getEndereco();
@@ -217,7 +220,7 @@ public class RegistroDeVacinacaoService {
 
         return registroResumido;
     }
-
+    //recebe a data de nascimento e calcula a idade
     public Integer calculoIdade(String dataDeNascimento) {
         // Formato da data (ano-mês-dia)
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -229,7 +232,7 @@ public class RegistroDeVacinacaoService {
 
         return idade;
     }
-
+    //retorna o total de vacinações gerais ou por estado
     public Integer obterNumeroDeVacinacao(String estado) {
         if (estado != null) {
             List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao();
@@ -241,16 +244,16 @@ public class RegistroDeVacinacaoService {
             return listarTodosOsRegistrosDeVacinacao().size();
         }
     }
-
+    //usa um metodo para buscar na api2 o paciente e busca o estado.
     public String obterEstadoDoPaciente(String id) {
         Paciente paciente = validarPacienteExistente(id);
         return paciente.getEndereco().getEstado();
     }
-
+    //busca no banco de dados todos os registros de vacinação de um paciente especifico
     public List<RegistroDeVacinacao> obterRegistroDeVacinacaoPorIdDoPaciente(String id) {
         return registroDeVacinacaoRepository.findByIdentificacaoDoPaciente(id);
     }
-
+    //coloca em uma lista todos os pacientes atrasados
     public List<Paciente> obterPacientesAtrasados(String estado) {
         LocalDate dataAtual = LocalDate.now();
         List<RegistroDeVacinacao> registros = listarTodosOsRegistrosDeVacinacao();
@@ -288,7 +291,8 @@ public class RegistroDeVacinacaoService {
                     .collect(Collectors.toList());
         }
     }
-
+    /*retorna uma lista com registros de vacinação dose com base,
+    resumo com fabricante, vacinas e doses aplicadas, filtradas por estado e/ou fabricante*/
     public List<RegistroDeVacinacaoDoses> obterDosesAplicadas(String estado, String fabricantes) {
         List<Vacina> vacinasUnicas = new ArrayList<>();
         List<RegistroDeVacinacaoDoses> registroDeVacinacaoDoses = new ArrayList<>();
@@ -329,7 +333,7 @@ public class RegistroDeVacinacaoService {
         }
         return registroDeVacinacaoDoses;
     }
-
+    //apaga um registro de vacinação
     public Boolean apagarRegistro(String id) {
         if (confirmacaoUltimaDose(id)) {
             LOGGER.info("Registro de vacinação apagado. ID: " + id);
@@ -339,7 +343,7 @@ public class RegistroDeVacinacaoService {
             throw new ApagarException("Só é possivel apagar o ultimo registro de vacinação");
         }
     }
-
+    // edita um registro de vacinação existente
     public RegistroDeVacinacao editarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao, String id) {
         if (confirmacaoUltimaDose(id)) {
             RegistroDeVacinacao registroAtual = obterRegistroDeVacinacaoPorId(id);
@@ -351,7 +355,7 @@ public class RegistroDeVacinacaoService {
             throw new EditarException("Só é possível editar o último registro de vacinação");
         }
     }
-
+    //edita informações de um registro de informações parcialmente, com base em palavra chaves
     public RegistroDeVacinacao editarRegistroDeVacinacaoParcial(String id, Map<String, Object> atualizacao) {
         RegistroDeVacinacao registroAtualizado = obterRegistroDeVacinacaoPorId(id);
         ProfissionalDeSaude profissionalDeSaude = registroAtualizado.getProfissionalDeSaude();
@@ -398,7 +402,7 @@ public class RegistroDeVacinacaoService {
         salvarRegistroEditado(registroAtualizado);
         return registroAtualizado;
     }
-
+    //verifica se os dados a serem editados são validos
     public void validarEdicaoRegistro(RegistroDeVacinacao registroDeVacinacao, RegistroDeVacinacao registroAtual) {
         if (registroAtual.getIdentificacaoDoPaciente().equals(registroDeVacinacao.getIdentificacaoDoPaciente()) &&
                 registroAtual.getIdentificacaoDaDose() != registroDeVacinacao.getIdentificacaoDaDose()) {
@@ -409,18 +413,18 @@ public class RegistroDeVacinacaoService {
         List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
         validarDose(registroDeVacinacao, registros);
     }
-
+    //altera o id do objeto gerado para o id do objeto a ser editado
     public RegistroDeVacinacao criarRegistroEditado(RegistroDeVacinacao registroDeVacinacao, String id) {
         RegistroDeVacinacao registroEditado = registroDeVacinacao;
         registroEditado.setId(id);
         return registroEditado;
     }
-
+    //salva registro no banco de dados
     public void salvarRegistroEditado(RegistroDeVacinacao registroEditado) {
         LOGGER.info("Registro de vacinação editado. " + registroEditado);
         registroDeVacinacaoRepository.save(registroEditado);
     }
-
+    //injeta dados no banco para testes
     public void injetarDados() {
         List <RegistroDeVacinacao> registrosInject = RegistroDeVacinacaoUtils.injectDados();
         for (RegistroDeVacinacao registro : registrosInject) {
