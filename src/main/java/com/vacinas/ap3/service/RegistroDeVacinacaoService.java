@@ -263,15 +263,18 @@ public class RegistroDeVacinacaoService {
 
             if (ultimaDose != null) {
                 Vacina ultimaVacina = validarVacinaExistente(ultimaDose.getIdentificacaoDaVacina());
-                LocalDate dataAlvo = ultimaDose.getDataDeVacinacao().plusDays(ultimaVacina.getIntervalo_doses());
 
-                if (dataAlvo.isBefore(dataAtual)) {
-                    pacientesAtrasadosSet.add(validarPacienteExistente(registro.getIdentificacaoDoPaciente()));
+                // Verificar se o número de doses da última vacina é diferente da identificação da última dose
+                if (ultimaVacina.getNumero_de_doses() != ultimaDose.getIdentificacaoDaDose()) {
+                    LocalDate dataAlvo = ultimaDose.getDataDeVacinacao().plusDays(ultimaVacina.getIntervalo_doses());
+
+                    if (dataAlvo.isBefore(dataAtual)) {
+                        pacientesAtrasadosSet.add(validarPacienteExistente(registro.getIdentificacaoDoPaciente()));
+                    }
                 }
             }
         }
 
-        // Agora, pacientesAtrasadosSet contém pacientes únicos
         List<Paciente> pacientesAtrasados = new ArrayList<>(pacientesAtrasadosSet);
 
         if (estado == null) {
