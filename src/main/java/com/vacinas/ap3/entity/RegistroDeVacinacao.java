@@ -29,4 +29,5 @@ public class RegistroDeVacinacao {
     private int identificacaoDaDose;
     @Valid
     private ProfissionalDeSaude profissionalDeSaude;
+
 }
