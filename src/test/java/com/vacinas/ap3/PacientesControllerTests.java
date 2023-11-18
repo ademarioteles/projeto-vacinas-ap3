@@ -32,8 +32,6 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 public class PacientesControllerTests {
 
-    @Autowired
-    private PacientesController pacientesController;
     @InjectMocks
     private PacientesController pacientesControllerInject;
     @Mock
