@@ -1,4 +1,4 @@
-<img src="http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge"/>
+[![Status](http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge)](https://docs.google.com/document/d/1gmlTeWkoDIqYmJoyexdaRENjw6iERnu1/edit)
 </p>
 
 # 💉 API de Gerenciamento de Vacinação
@@ -19,11 +19,8 @@ Esta é uma API de Gerenciamento de Vacinação desenvolvida pela equipe Sanhok 
 - [Configuração](#configuração)
 - [Uso](#uso)
 - [Endpoints](#endpoints)
-<!-- - [Testes](#testes) -->
-<!-- - [Docker](#docker) -->
 - [Contribuição](#contribuição)
 - [Autores](#autores)
-<!-- - [Licença](#licença) -->
 - [Referências](#referências)
 
   
@@ -35,6 +32,10 @@ A API é projetada para fornecer as seguintes funcionalidades:
 - Gerenciamento de informações sobre vacinas e pacientes.
 - Estatísticas sobre vacinação, como doses aplicadas, doses atrasadas e vacinas por fabricante.
 
+##  🧪  Testes BDD
+
+Nossos testes de Desenvolvimento Orientado a Comportamento (BDD) estão documentados [aqui](https://docs.google.com/document/d/1gmlTeWkoDIqYmJoyexdaRENjw6iERnu1/edit?usp=sharing&ouid=104507896264921397464&rtpof=true&sd=true).
+
 ## 📦 Requisitos
 
 Antes de iniciar, certifique-se de que possui os seguintes requisitos:
@@ -42,8 +43,7 @@ Antes de iniciar, certifique-se de que possui os seguintes requisitos:
 - [Java (versão 17)](https://www.java.com/)
 - [MongoDB (versão 1.40.4)](https://www.mongodb.com/try/download/compass)
 - [Postman ](https://www.postman.com/downloads/)
-<!-- - [Docker](https://www.docker.com/)
-- [Docker-Compose](https://www.docker.com/) -->
+- [Apache Maven](https://maven.apache.org/)
 
 ##  Endpoint de Teste
 
@@ -51,12 +51,12 @@ Para facilitar a verificação rápida da API, você pode usar o seguinte endpoi
 
 Endpoint: **GET** 
 ```bash
-https://wb-api-vacinas-v2.azurewebsites.net/pacientes
+https://wb-api-vacinas-v1.azurewebsites.net/sanhok
 ```
 Descrição: Retorna uma mensagem simples indicando que a API está em funcionamento.
 
 ```bash
-{"status": "API de Gerenciamento de Vacinação em Desenvolvimento"}
+API de Gerenciamento de Vacinação desenvolvida pela equipe Sanhok para atender aos requisitos do projeto 'Programação Web 2 - Oficial 2
 ```
 
 ## ⚙️ Configuração
@@ -66,20 +66,15 @@ Se você encontrar problemas ao acessar o endpoint online ou simplesmente deseja
 ### Clone este repositório:
 
 ```bash
-git clone https://github.com/seu-usuario/api-gerenciamento-vacinacao.git
+git clone https://github.com/ademarioteles/projeto-vacinas-ap3.git
 ```
-
-<!-- ### Instale as dependências:
-```bash
-
-``` -->
 
 ###  Configure as variáveis de ambiente no arquivo (application.properties) para definir as configurações do banco de dados, URLs de outras APIs, etc.
 
 ```bash
-MONGODB_URI=mongodb://localhost:27017/vacinacao
-API_PACIENTES_URL=http://localhost:8080
-API_VACINAS_URL=http://localhost:8081
+API_VACINAS_URL=http://localhost:8080
+API_PACIENTES_URL=http://localhost:8081
+API_REGISTROS_VACINACAO_URL=http://localhost:8082
 ```
 
 ###  Inicie o servidor:
@@ -93,52 +88,105 @@ A API estará acessível em http://localhost:8080.
 
 A API oferece vários endpoints para criar, ler, atualizar e excluir registros de vacinação, bem como para consultar informações estatísticas. Certifique-se de seguir a documentação dos endpoints.
 
-###  🛣️ Endpoints
+### 🛣️ Endpoints
 
-[/pacientes](#pacientes): Gerenciamento de informações sobre pacientes.
-  
- *Este endpoint é responsável por fornecer funcionalidades relacionadas ao gerenciamento de informações sobre pacientes. Aqui estão algumas ações comuns que podem ser associadas a este endpoint:*
- 
-   - **GET /pacientes**: Retorna a lista de todos os pacientes cadastrados.
-   - **GET /pacientes/{id}**: Retorna os detalhes de um paciente específico com base no ID.
-   - **POST /pacientes**: Cadastra um novo paciente com base nos dados fornecidos no corpo da solicitação.
-   - **PUT /pacientes/{id}**: Atualiza as informações de um paciente existente com base no ID.
-   - **DELETE /pacientes/{id}**: Exclui um paciente específico com base no ID.
-  
-  
-  [/pacientes/cadastrar](#pacientes/cadastrar): 
+#### [/vacinas](#vacinas)
+- **POST /vacinas/cadastrar**: Adiciona uma nova vacina ao sistema.
+  - **Request Body**: Um objeto JSON contendo as informações da nova vacina.
+  - **Response**: Retorna a vacina recém-adicionada com status 201 (Created).
 
-*Este endpoint é especificamente dedicado à ação de cadastrar um novo paciente. Geralmente, ele aceitará dados do paciente no corpo da solicitação usando o método POST. Por exemplo:*
+- **POST /vacinas/inject**: Simula a administração de vacinas, adicionando registros fictícios.
+  - **Response**: Retorna a lista atualizada de todas as vacinas com status 200 (OK).
 
-  - **POST /pacientes/cadastrar:** Aceita dados do paciente no corpo da solicitação e cadastra um novo paciente.
+- **GET /vacinas**: Obtém a lista de todas as vacinas cadastradas.
+  - **Response**: Retorna a lista de vacinas com status 200 (OK).
 
-[/pacientes/todos](#pacientes/todos): 
-  
-  *Este endpoint é destinado a recuperar a lista completa de todos os pacientes cadastrados. O método associado a este endpoint geralmente será o GET. Exemplo:*
+- **GET /vacinas/{id}**: Obtém informações sobre uma vacina específica com base no ID.
+  - **Path Variable**: `id` - O ID da vacina desejada.
+  - **Response**: Retorna os detalhes da vacina com status 200 (OK).
 
- - **GET /pacientes/todos:** Retorna a lista completa de todos os pacientes cadastrados no sistema.
+- **PUT /vacinas**: Edita uma vacina com base nas informações fornecidas no corpo da requisição.
+  - **Request Body**: Um objeto JSON contendo as informações atualizadas da vacina.
+  - **Response**: Retorna a vacina editada com status 200 (OK).
 
-<!-- Consulte a documentação dos endpoints para obter detalhes sobre como usar cada um deles. -->
+- **PUT /vacinas/{id}**: Edita uma vacina específica com base no ID e nas informações fornecidas no corpo da requisição.
+  - **Path Variable**: `id` - O ID da vacina a ser editada.
+  - **Request Body**: Um objeto JSON contendo as informações atualizadas da vacina.
+  - **Response**: Retorna a vacina editada com status 200 (OK).
 
-<!-- ### 🧪 Testes
-A API inclui testes automatizados para garantir o funcionamento correto dos endpoints. Execute os testes da seguinte maneira: -->
+- **PATCH /vacinas/{id}**: Atualiza parcialmente uma vacina específica com base no ID e nas informações fornecidas no corpo da requisição.
+  - **Path Variable**: `id` - O ID da vacina a ser atualizada parcialmente.
+  - **Request Body**: Um objeto JSON contendo as informações a serem atualizadas.
+  - **Response**: Retorna a vacina parcialmente atualizada com status 200 (OK).
 
-<!-- ```bash
+- **PATCH /vacinas**: Atualiza parcialmente uma vacina com base nas informações fornecidas no corpo da requisição.
+  - **Request Body**: Um objeto JSON contendo as informações a serem atualizadas.
+  - **Response**: Retorna a vacina parcialmente atualizada com status 200 (OK).
 
-Comando de testes
+- **DELETE /vacinas/{id}**: Exclui uma vacina específica com base no ID.
+  - **Path Variable**: `id` - O ID da vacina a ser excluída.
+  - **Response**: Retorna uma mensagem de sucesso com status 200 (OK).
 
-``` -->
-<!-- ###  🐳 Docker
+- **DELETE /vacinas/todos**: Exclui todas as vacinas do sistema.
+  - **Response**: Retorna uma mensagem de sucesso com status 200 (OK).
 
-Se desejar, você pode executar a API em um contêiner Docker. Use o Docker Compose para criar o ambiente completo, incluindo o banco de dados MongoDB e outras dependências:
+#### [/sanhok](#sanhok)
+- **GET /sanhok**: Retorna uma mensagem de boas-vindas personalizada para a API de Gerenciamento de Vacinação desenvolvida pela equipe Sanhok.
+  - **Response**: Retorna a mensagem de boas-vindas com status 200 (OK) e tipo de conteúdo TEXT_PLAIN.
 
-```bash
+- **GET /sanhok/inject**: Simula a injeção de dados para o registro de vacinação.
+  - **Response**: Retorna a mensagem "Usuários injetados" com status 200 (OK) e tipo de conteúdo TEXT_PLAIN.
 
-xxxxxxxxxxxx
+#### [/pacientes](#pacientes)
+- **GET /pacientes/{id}/vacinas**: Obtém o registro resumido de vacinação para um paciente específico com base no ID.
+  - **Path Variable**: `id` - O ID do paciente.
+  - **Response**: Retorna o registro resumido de vacinação com status 200 (OK).
 
-```
+- **GET /pacientes/vacinas/atrasadas**: Obtém a lista de pacientes com doses de vacinas atrasadas.
+  - **Request Parameter**: `estado` - (Opcional) Estado dos pacientes.
+  - **Response**: Retorna a lista de pacientes com doses atrasadas com status 200 (OK).
 
-A API estará acessível em http://localhost:5000, e o banco de dados MongoDB estará em execução no contêiner. -->
+#### [/registros-de-vacinacao](#registros-de-vacinacao)
+- **POST /registros-de-vacinacao/cadastrar**: Cria um novo registro de vacinação.
+  - **Request Body**: Um objeto JSON contendo as informações do novo registro de vacinação.
+  - **Response**: Retorna uma mensagem de sucesso com status 201 (Created).
+
+- **POST /registros-de-vacinacao/editar/{id}**: Edita um registro de vacinação com base no ID e nas informações fornecidas no corpo da requisição.
+  - **Path Variable**: `id` - O ID do registro de vacinação a ser editado.
+  - **Request Body**: Um objeto JSON contendo as informações atualizadas do registro de vacinação.
+  - **Response**: Retorna uma mensagem de sucesso com status 200 (OK).
+
+- **PATCH /registros-de-vacinacao/editar/{id}**: Edita parcialmente um registro de vacinação com base no ID e nas informações fornecidas no corpo da requisição.
+  - **Path Variable**: `id` - O ID do registro de vacinação a ser editado parcialmente.
+  - **Request Body**: Um objeto JSON contendo as informações a serem atualizadas.
+  - **Response**: Retorna uma mensagem de sucesso com status 200 (OK).
+
+- **GET /registros-de-vacinacao/apagar/{id}**: Apaga um registro de vacinação com base no ID.
+  - **Path Variable**: `id` - O ID do registro de vacinação a ser apagado.
+  - **Response**: Retorna uma mensagem de sucesso com status 200 (OK).
+
+- **GET /registros-de-vacinacao/paciente/{id}**: Obtém a lista de registros de vacinação para um paciente específico com base no ID.
+  - **Path Variable**: `id` - O ID do paciente.
+  - **Response**: Retorna a lista de registros de vacinação com status 200 (OK).
+
+- **GET /registros-de-vacinacao/vacina/{id}**: Obtém a lista de registros de vacinação para uma vacina específica com base no ID.
+  - **Path Variable**: `id` - O ID da vacina.
+  - **Response**: Retorna a lista de registros de vacinação com status 200 (OK).
+
+- **GET /registros-de-vacinacao/lista**: Obtém a lista de todos os registros de vacinação.
+  - **Response**: Retorna a lista de registros de vacinação com status 200 (OK).
+
+#### [/vacinas-aplicadas](#vacinas-aplicadas)
+- **GET /vacinas-aplicadas/quantidade**: Obtém a quantidade total de vacinações.
+  - **Request Parameter**: `estado` - (Opcional) Estado das vacinações.
+  - **Response**: Retorna a quantidade total de vacinações com status 200 (OK).
+
+- **GET /vacinas-aplicadas**: Obtém a lista de doses aplicadas.
+  - **Request Parameter**: `estado` - (Opcional) Estado das vacinações.
+  - **Request Parameter**: `fabricantes` - (Opcional) Fabricantes das vacinas.
+  - **Response**: Retorna a lista de doses aplicadas com status 200 (OK).
+
+
 
 ## 🤝 Contribuição
 
