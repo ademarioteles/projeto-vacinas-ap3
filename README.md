@@ -203,7 +203,7 @@ Se desejar contribuir para o desenvolvimento deste projeto, siga estas etapas:
 
 - Ademario Teles - [GitHub](https://github.com/ademarioteles)
 - Ana Beatriz  - [GitHub](https://github.com/anabiajferreira)
-- Maiara Rodrigues  - [GitHub](hthttps://github.com/maia-ra)
+- Maiara Rodrigues  - [GitHub](https://github.com/maia-ra)
 - Vanessa Santana  - [GitHub](https://github.com/nessa1408)
 - Victor Caetano - [GitHub](https://github.com/vctor-c)
 - Taysa Barbosa  - [GitHub](https://github.com/taysa-barbosa)
