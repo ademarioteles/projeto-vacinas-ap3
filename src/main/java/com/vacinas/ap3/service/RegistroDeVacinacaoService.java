@@ -21,6 +21,7 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -161,7 +162,7 @@ public class RegistroDeVacinacaoService {
         validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
         List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
         validarDose(registroDeVacinacao, registros);
-        registroDeVacinacaoRepository.save(registroDeVacinacao);
+        registroDeVacinacaoRepository.insert(registroDeVacinacao);
         LOGGER.info("Registro de vacinação criado" + registroDeVacinacao);
         return true;
     }
@@ -251,7 +252,7 @@ public class RegistroDeVacinacaoService {
     public List<Paciente> obterPacientesAtrasados(String estado) {
         LocalDate dataAtual = LocalDate.now();
         List<RegistroDeVacinacao> registros = listarTodosOsRegistrosDeVacinacao();
-        List<Paciente> pacientesAtrasados = new ArrayList<>();
+        Set<Paciente> pacientesAtrasadosSet = new HashSet<>();
 
         for (RegistroDeVacinacao registro : registros) {
             List<RegistroDeVacinacao> registrosPorPaciente = obterRegistroDeVacinacaoPorIdDoPaciente(registro.getIdentificacaoDoPaciente());
@@ -265,24 +266,24 @@ public class RegistroDeVacinacaoService {
                 LocalDate dataAlvo = ultimaDose.getDataDeVacinacao().plusDays(ultimaVacina.getIntervalo_doses());
 
                 if (dataAlvo.isBefore(dataAtual)) {
-                    pacientesAtrasados.add(validarPacienteExistente(registro.getIdentificacaoDoPaciente()));
+                    pacientesAtrasadosSet.add(validarPacienteExistente(registro.getIdentificacaoDoPaciente()));
                 }
             }
         }
 
+        // Agora, pacientesAtrasadosSet contém pacientes únicos
+        List<Paciente> pacientesAtrasados = new ArrayList<>(pacientesAtrasadosSet);
+
         if (estado == null) {
             return pacientesAtrasados;
         } else {
-            List<Paciente> pacientesFiltrados = new ArrayList<>();
-            for (Paciente paciente : pacientesAtrasados) {
-                Endereco endereco = paciente.getEndereco();
-                if (endereco.getEstado().equals(estado)) {
-                    pacientesFiltrados.add(paciente);
-                }
-            }
-            return pacientesFiltrados;
+            // Filtra pacientes pelo estado, se necessário
+            return pacientesAtrasados.stream()
+                    .filter(paciente -> paciente.getEndereco().getEstado().equals(estado))
+                    .collect(Collectors.toList());
         }
     }
+
 
     public List<RegistroDeVacinacaoDoses> obterDosesAplicadas(String estado, String fabricantes) {
         List<Vacina> vacinasUnicas = new ArrayList<>();
