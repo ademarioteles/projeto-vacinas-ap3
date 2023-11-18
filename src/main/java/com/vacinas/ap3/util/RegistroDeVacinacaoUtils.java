@@ -146,7 +146,7 @@ public class RegistroDeVacinacaoUtils {
         List<RegistroDeVacinacao> registros = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         //Registro COMPLETO, Com todas as doses de vacinação (3 doses)
-        RegistroDeVacinacao registro = new RegistroDeVacinacao("das");
+        RegistroDeVacinacao registro = new RegistroDeVacinacao();
         ProfissionalDeSaude profissionalDeSaude = new ProfissionalDeSaude();
         registro.setId("1");
         registro.setDataDeVacinacao(LocalDate.parse("2021-01-01", formatter));
