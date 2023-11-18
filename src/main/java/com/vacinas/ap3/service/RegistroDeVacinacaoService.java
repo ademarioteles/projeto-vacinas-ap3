@@ -9,12 +9,14 @@ import com.vacinas.ap3.entity.RegistroDeVacinacaoDoses;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
+import com.vacinas.ap3.util.RegistroDeVacinacaoUtils;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -162,7 +164,7 @@ public class RegistroDeVacinacaoService {
         validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
         List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
         validarDose(registroDeVacinacao, registros);
-        registroDeVacinacaoRepository.insert(registroDeVacinacao);
+        registroDeVacinacaoRepository.save(registroDeVacinacao);
         LOGGER.info("Registro de vacinação criado" + registroDeVacinacao);
         return true;
     }
@@ -286,7 +288,6 @@ public class RegistroDeVacinacaoService {
                     .collect(Collectors.toList());
         }
     }
-
 
     public List<RegistroDeVacinacaoDoses> obterDosesAplicadas(String estado, String fabricantes) {
         List<Vacina> vacinasUnicas = new ArrayList<>();
@@ -418,6 +419,13 @@ public class RegistroDeVacinacaoService {
     public void salvarRegistroEditado(RegistroDeVacinacao registroEditado) {
         LOGGER.info("Registro de vacinação editado. " + registroEditado);
         registroDeVacinacaoRepository.save(registroEditado);
+    }
+    @Transactional
+    public void injetarDados() {
+        List <RegistroDeVacinacao> registrosInject = RegistroDeVacinacaoUtils.injectDados();
+        for (RegistroDeVacinacao registro : registrosInject) {
+            registroDeVacinacaoRepository.save(registro);
+        }
     }
 
 }

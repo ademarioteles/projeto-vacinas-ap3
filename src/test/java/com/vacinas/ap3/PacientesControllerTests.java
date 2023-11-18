@@ -78,7 +78,6 @@ public class PacientesControllerTests {
         when(registroDeVacinacaoService.obterPacientesAtrasados("BA")).thenReturn(pacientes);
         ResponseEntity<List<Paciente>> respostaEsperada = ResponseEntity.status(200).body(pacientes);
         ResponseEntity<List<Paciente>> respostaReal = pacientesControllerInject.obterPacientesAtrasados("BA");
-
         assertEquals(respostaEsperada, respostaReal);
     }
     @Test

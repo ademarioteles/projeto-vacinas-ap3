@@ -440,7 +440,7 @@ class RegistroDeVacinacaoServiceTests {
 
         // Teste do método obterDosesAplicadas
         List<RegistroDeVacinacaoDoses> resultado = registroDeVacinacaoService.obterDosesAplicadas(null, "FabricanteY");
-        System.out.println(resultado);
+
         // Verifique se o resultado possui o tamanho esperado ou outra lógica
         assertEquals(3, resultado.get(0).getDosesAplicadas());
     }
@@ -465,7 +465,6 @@ class RegistroDeVacinacaoServiceTests {
 
         // Teste do método obterDosesAplicadas
         List<RegistroDeVacinacaoDoses> resultado = registroDeVacinacaoService.obterDosesAplicadas("RJ", "FabricanteY");
-        System.out.println(resultado);
         // Verifique se o resultado possui o tamanho esperado ou outra lógica
         assertEquals(2, resultado.get(0).getDosesAplicadas());
     }
