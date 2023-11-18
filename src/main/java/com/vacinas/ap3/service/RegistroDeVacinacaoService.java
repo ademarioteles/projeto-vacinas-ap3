@@ -66,7 +66,7 @@ public class RegistroDeVacinacaoService {
     }
 
     private void validarDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
-        if (registros.isEmpty()) {
+        if (registros.isEmpty() || registro.getIdentificacaoDaDose() == 1) {
             validarPrimeiraDose(registro);
             return;
         }
@@ -90,7 +90,7 @@ public class RegistroDeVacinacaoService {
 
     public void validarDoseExistente(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
         for (RegistroDeVacinacao registroExistente : registros) {
-            if (registroExistente.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose()) {
+            if (registroExistente.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose() && registroExistente.getIdentificacaoDaVacina() == registro.getIdentificacaoDaVacina()) {
                 throw new RegistroExistenteException("Registro de vacinação já existe.");
             }
         }
@@ -158,7 +158,7 @@ public class RegistroDeVacinacaoService {
         }
     }
 
-    public Boolean criarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao) {
+    public RegistroDeVacinacao  criarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao) {
         validarDataDeVacinacao(registroDeVacinacao.getDataDeVacinacao());
         validarPacienteExistente(registroDeVacinacao.getIdentificacaoDoPaciente());
         validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
@@ -166,7 +166,7 @@ public class RegistroDeVacinacaoService {
         validarDose(registroDeVacinacao, registros);
         registroDeVacinacaoRepository.save(registroDeVacinacao);
         LOGGER.info("Registro de vacinação criado" + registroDeVacinacao);
-        return true;
+        return registroDeVacinacao;
     }
 
     public List<RegistroDeVacinacao> listarTodosOsRegistrosDeVacinacao() {
@@ -340,19 +340,19 @@ public class RegistroDeVacinacaoService {
         }
     }
 
-    public Boolean editarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao, String id) {
+    public RegistroDeVacinacao editarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao, String id) {
         if (confirmacaoUltimaDose(id)) {
             RegistroDeVacinacao registroAtual = obterRegistroDeVacinacaoPorId(id);
             validarEdicaoRegistro(registroDeVacinacao, registroAtual);
             RegistroDeVacinacao registroEditado = criarRegistroEditado(registroDeVacinacao, id);
             salvarRegistroEditado(registroEditado);
-            return true;
+            return registroEditado;
         } else {
             throw new EditarException("Só é possível editar o último registro de vacinação");
         }
     }
 
-    public Boolean editarRegistroDeVacinacaoParcial(String id, Map<String, Object> atualizacao) {
+    public RegistroDeVacinacao editarRegistroDeVacinacaoParcial(String id, Map<String, Object> atualizacao) {
         RegistroDeVacinacao registroAtualizado = obterRegistroDeVacinacaoPorId(id);
         ProfissionalDeSaude profissionalDeSaude = registroAtualizado.getProfissionalDeSaude();
         List <String> itens = new ArrayList<>();
@@ -392,11 +392,11 @@ public class RegistroDeVacinacaoService {
         }
         for (String elemento : itens) {
             if (!elemento.matches("nome") && !elemento.matches("cpf")) {
-                return editarRegistroDeVacinacao(registroAtualizado, id);
+                editarRegistroDeVacinacao(registroAtualizado, id);
             }
         }
         salvarRegistroEditado(registroAtualizado);
-        return true;
+        return registroAtualizado;
     }
 
     public void validarEdicaoRegistro(RegistroDeVacinacao registroDeVacinacao, RegistroDeVacinacao registroAtual) {
@@ -420,7 +420,7 @@ public class RegistroDeVacinacaoService {
         LOGGER.info("Registro de vacinação editado. " + registroEditado);
         registroDeVacinacaoRepository.save(registroEditado);
     }
-    @Transactional
+
     public void injetarDados() {
         List <RegistroDeVacinacao> registrosInject = RegistroDeVacinacaoUtils.injectDados();
         for (RegistroDeVacinacao registro : registrosInject) {

@@ -25,36 +25,24 @@ public class RegistroDeVacinacaoController {
     }
 
     @PostMapping("/cadastrar")
-    public ResponseEntity criarRegistroDeVacinacao(@RequestBody @Valid RegistroDeVacinacao registroDeVacinacao) {
-            if (registroDeVacinacaoService.criarRegistroDeVacinacao(registroDeVacinacao)) {
+    public ResponseEntity <RegistroDeVacinacao> criarRegistroDeVacinacao(@RequestBody @Valid RegistroDeVacinacao registroDeVacinacao) {
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(new Mensagem("Registro cadastrado com sucesso!"));
-            } else {
-                throw new ErroCriacaoRegistro("Erro ao criar o registro");
-            }
+                        .body(registroDeVacinacaoService.criarRegistroDeVacinacao(registroDeVacinacao));
     }
 
     @PostMapping("/editar/{id}")
-    public ResponseEntity editarRegistroDeVacinacao(@RequestBody @Valid RegistroDeVacinacao registroDeVacinacao, @PathVariable String id) {
-            if (registroDeVacinacaoService.editarRegistroDeVacinacao(registroDeVacinacao, id)) {
+    public ResponseEntity<RegistroDeVacinacao> editarRegistroDeVacinacao(@RequestBody @Valid RegistroDeVacinacao registroDeVacinacao, @PathVariable String id) {
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(new Mensagem("Registro editado com sucesso!"));
-            } else {
-                throw new EditarException("Erro ao editar o registro");
-            }
+                        .body(registroDeVacinacaoService.editarRegistroDeVacinacao(registroDeVacinacao, id));
     }
 
     @PatchMapping("/editar/{id}")
     public ResponseEntity editarRegistroDeVacinacaoParcial(@PathVariable String id, @RequestBody Map<String, Object> atualizacao) {
-            if (registroDeVacinacaoService.editarRegistroDeVacinacaoParcial(id, atualizacao)) {
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(new Mensagem("Registro editado com sucesso!"));
-            } else {
-                throw new EditarException("Erro ao editar o registro");
-            }
+                        .body(registroDeVacinacaoService.editarRegistroDeVacinacaoParcial(id, atualizacao));
     }
 
     @GetMapping("/apagar/{id}")
