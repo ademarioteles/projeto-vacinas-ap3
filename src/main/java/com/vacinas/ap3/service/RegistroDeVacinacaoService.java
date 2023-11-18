@@ -10,6 +10,8 @@ import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
 import feign.FeignException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ import java.util.*;
 
 @Service
 public class RegistroDeVacinacaoService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericHandlerException.class);
     private RegistroDeVacinacaoRepository registroDeVacinacaoRepository;
     public InterfaceAPI2Service interfaceAPI2Service;
     public InterfaceAPI1Service interfaceAPI1Service;
@@ -159,6 +162,7 @@ public class RegistroDeVacinacaoService {
         List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
         validarDose(registroDeVacinacao, registros);
         registroDeVacinacaoRepository.save(registroDeVacinacao);
+        LOGGER.info("Registro de vacinação criado" + registroDeVacinacao);
         return true;
     }
 
@@ -323,6 +327,7 @@ public class RegistroDeVacinacaoService {
 
     public Boolean apagarRegistro(String id) {
         if (confirmacaoUltimaDose(id)) {
+            LOGGER.info("Registro de vacinação apagado. ID: " + id);
             registroDeVacinacaoRepository.deleteById(id);
             return true;
         } else {
@@ -407,6 +412,7 @@ public class RegistroDeVacinacaoService {
     }
 
     public void salvarRegistroEditado(RegistroDeVacinacao registroEditado) {
+        LOGGER.info("Registro de vacinação editado. " + registroEditado);
         registroDeVacinacaoRepository.save(registroEditado);
     }
 
