@@ -91,7 +91,7 @@ public class RegistroDeVacinacaoService {
     //verifica se ja existe uma dose identica cadastrada no banco de dados
     public void validarDoseExistente(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
         for (RegistroDeVacinacao registroExistente : registros) {
-            if (registroExistente.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose() && registroExistente.getIdentificacaoDaVacina() == registro.getIdentificacaoDaVacina()) {
+            if (registroExistente.getIdentificacaoDaDose() == registro.getIdentificacaoDaDose()) {
                 throw new RegistroExistenteException("Registro de vacinação já existe.");
             }
         }
@@ -333,7 +333,11 @@ public class RegistroDeVacinacaoService {
             registroDoses.setDosesAplicadas(quantidadeDoses);
             registroDeVacinacaoDoses.add(registroDoses);
         }
-        return registroDeVacinacaoDoses;
+        if (registroDeVacinacaoDoses.isEmpty()){
+            throw new RegistroInexistenteException("Nenhum registro encontrado.");
+        }else{
+            return registroDeVacinacaoDoses;
+        }
     }
     //apaga um registro de vacinação
     public Boolean apagarRegistro(String id) {
