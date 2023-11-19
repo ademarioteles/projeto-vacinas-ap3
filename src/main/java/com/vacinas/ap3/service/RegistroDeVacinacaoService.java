@@ -67,7 +67,7 @@ public class RegistroDeVacinacaoService {
     }
     //Organiza a chamada de diversos metodos, com o intuito de validar se a dose do registro é valida
     private void validarDose(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
-        if (registros.isEmpty() || registro.getIdentificacaoDaDose() == 1) {
+        if (registros.isEmpty()) {
             validarPrimeiraDose(registro);
             return;
         }
