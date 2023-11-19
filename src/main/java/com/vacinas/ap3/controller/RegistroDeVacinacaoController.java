@@ -47,7 +47,7 @@ public class RegistroDeVacinacaoController {
     @GetMapping("/apagar/{id}")
     public ResponseEntity apagarRegistroDeVacinacaoPorId(@PathVariable String id) {
             if (registroDeVacinacaoService.apagarRegistro(id)) {
-                return ResponseEntity.status(200).body("Resgistro apagado com sucesso");
+                return ResponseEntity.status(200).body("Registro apagado com sucesso");
             } else {
                 throw new RegistroInexistenteException("Nenhum registro Encontrado");
             }

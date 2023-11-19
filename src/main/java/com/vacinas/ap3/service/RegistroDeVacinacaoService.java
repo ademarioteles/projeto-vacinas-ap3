@@ -29,14 +29,16 @@ import java.util.stream.Collectors;
 @Service
 public class RegistroDeVacinacaoService {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericHandlerException.class);
-    @Autowired
     private RegistroDeVacinacaoRepository registroDeVacinacaoRepository;
-
-    @Autowired
     public InterfaceAPI2Service interfaceAPI2Service;
-
-    @Autowired
     public InterfaceAPI1Service interfaceAPI1Service;
+
+    public RegistroDeVacinacaoService(RegistroDeVacinacaoRepository registroDeVacinacaoRepository, InterfaceAPI2Service interfaceAPI2Service, InterfaceAPI1Service interfaceAPI1Service) {
+        this.registroDeVacinacaoRepository = registroDeVacinacaoRepository;
+        this.interfaceAPI2Service = interfaceAPI2Service;
+        this.interfaceAPI1Service = interfaceAPI1Service;
+    }
+
     //Valida a existência de um paciente com base na identificação fornecida, consultando uma API externa
     public Paciente validarPacienteExistente(String identificacaoDoPaciente) {
         try {
