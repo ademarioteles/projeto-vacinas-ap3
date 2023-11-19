@@ -3,9 +3,7 @@ package com.vacinas.ap3.controller;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/sanhok")
@@ -23,12 +21,12 @@ public class Controller {
                 .body("API de Gerenciamento de Vacinação desenvolvida pela equipe Sanhok para atender aos requisitos do projeto 'Programação Web 2 - Oficial 2'");
     }
 
-    @GetMapping("/inject")
+    @PostMapping("/inject")
     public ResponseEntity injectSanhok(){
         registroDeVacinacaoService.injetarDados();
         return ResponseEntity.status(200)
                 .contentType(MediaType.TEXT_PLAIN)
-                .body("Usuarios injetados");
+                .body("Registros de vacinação injetados");
     }
 
 

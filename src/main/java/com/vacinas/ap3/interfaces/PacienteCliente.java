@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
-@FeignClient(name = "api2", url = "https://wb-api-vacinas-v2.azurewebsites.net/")
+@FeignClient(name = "api2", url = "http://localhost:8081")
 public interface PacienteCliente {
 
     @GetMapping("/pacientes")
