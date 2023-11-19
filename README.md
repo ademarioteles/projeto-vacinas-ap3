@@ -45,7 +45,7 @@ Antes de iniciar, certifique-se de que possui os seguintes requisitos:
 - [Postman ](https://www.postman.com/downloads/)
 - [Apache Maven](https://maven.apache.org/)
 
-⚠️ Observação Importante: API 3
+## ⚠️ Observação Importante: API 3
 
 Atualmente, a API 3 está configurada para funcionar online, mas pode enfrentar dificuldades ao fazer buscas nas APIs 1 e 2 devido a questões de conectividade. Recomendamos que alguns testes sejam realizados localmente para garantir o correto funcionamento da integração entre as APIs.
 
