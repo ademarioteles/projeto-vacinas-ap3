@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -23,11 +22,11 @@ public class VacinasAplicadasController {
 
     @GetMapping("/quantidade")
     public ResponseEntity<Integer> obterQuantidadeDeVacinacao(@RequestParam(name = "estado", required = false) String estado) {
-            return ResponseEntity.status(200).body(registroDeVacinacaoService.obterNumeroDeVacinacao(estado));
+        return ResponseEntity.status(200).body(registroDeVacinacaoService.obterNumeroDeVacinacao(estado));
     }
 
     @GetMapping("")
     public ResponseEntity<List<RegistroDeVacinacaoDoses>> obterDosesAplicadas(@RequestParam(name = "estado", required = false) String estado, @RequestParam(name = "fabricantes", required = false) String fabricantes) {
-            return ResponseEntity.status(200).body(registroDeVacinacaoService.obterDosesAplicadas(estado, fabricantes));
+        return ResponseEntity.status(200).body(registroDeVacinacaoService.obterDosesAplicadas(estado, fabricantes));
     }
 }

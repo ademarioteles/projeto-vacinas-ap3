@@ -93,8 +93,8 @@ public class VacinasAplicadasControllerTests {
     @Test
     void obterDosesAplicadasComFabricanteSucessoController() {
         List<RegistroDeVacinacaoDoses> registros = Arrays.asList(
-                        new RegistroDeVacinacaoDoses("FabricanteExemplo", "VacinaExemplo", 2)
-                );
+                new RegistroDeVacinacaoDoses("FabricanteExemplo", "VacinaExemplo", 2)
+        );
 
         when(registroDeVacinacaoService.obterDosesAplicadas(null, "Fabricante")).thenReturn(registros);
 

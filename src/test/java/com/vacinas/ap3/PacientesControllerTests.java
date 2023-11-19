@@ -69,7 +69,7 @@ public class PacientesControllerTests {
         Assertions.assertThrows(RegistroInexistenteException.class, () -> pacientesControllerInject.obterRegistroResumidoDeVacinacaoPorIdDoPaciente("1"));
 
     }
-@Test
+    @Test
     void obterPacientesAtrasadosSucessoController() {
         List<Paciente> pacientes = PacienteUtils.criarListaPacientesExemplo();
 

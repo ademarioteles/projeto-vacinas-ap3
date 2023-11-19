@@ -509,7 +509,7 @@ class RegistroDeVacinacaoServiceTests {
     }
 
 
-// criarRegistroEditado
+    // criarRegistroEditado
     @Test
     public void testCriarRegistroEditado() {
         // Criar um registro de vacinação para editar

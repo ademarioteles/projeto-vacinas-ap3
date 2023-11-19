@@ -47,8 +47,8 @@ public class RegistroDeVacinacaoControllerTests {
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
-        when(registroDeVacinacaoService.criarRegistroDeVacinacao(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo())).thenReturn(true);
-        when(registroDeVacinacaoService.editarRegistroDeVacinacao(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo(), "1")).thenReturn(true);
+        when(registroDeVacinacaoService.criarRegistroDeVacinacao(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo())).thenReturn(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo());
+        when(registroDeVacinacaoService.editarRegistroDeVacinacao(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo(), "1")).thenReturn(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo());
         when(registroDeVacinacaoService.obterRegistroDeVacinacaoPorId("1")).thenReturn(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo());
 
     }
@@ -57,7 +57,7 @@ public class RegistroDeVacinacaoControllerTests {
     void criarRegistroDeVacinacaoTest(){
         Assertions.assertEquals(ResponseEntity.status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new Mensagem("Registro cadastrado com sucesso!")), registroDeVacinacaoControllerInject.criarRegistroDeVacinacao
+                .body(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo()), registroDeVacinacaoControllerInject.criarRegistroDeVacinacao
                 (RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo()));
     }
     @Test
@@ -70,7 +70,7 @@ public class RegistroDeVacinacaoControllerTests {
     void editarRegistroDeVacinacaoTest(){
         Assertions.assertEquals(ResponseEntity.status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new Mensagem("Registro editado com sucesso!")), registroDeVacinacaoControllerInject.editarRegistroDeVacinacao
+                .body(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo()), registroDeVacinacaoControllerInject.editarRegistroDeVacinacao
                 (RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo(), "1"));
     }
     @Test
@@ -78,24 +78,6 @@ public class RegistroDeVacinacaoControllerTests {
         RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
         registro.setIdentificacaoDaVacina("");
         Assertions.assertThrows(ConstraintViolationException.class, () -> registroDeVacinacaoController.editarRegistroDeVacinacao(registro, "1"));
-    }
-    @Test
-    void editarRegistroDeVacinacaoFalhaAoEditarController() {
-        // Simulando um registro existente
-        RegistroDeVacinacao registroExistente = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
-
-        // Simulando uma chamada de edição mal-sucedida
-        when(registroDeVacinacaoService.editarRegistroDeVacinacao(any(), eq("1"))).thenReturn(false);
-
-        // Executando o método do controlador e capturando a exceção
-        EditarException exception = assertThrows(EditarException.class,
-                () -> registroDeVacinacaoControllerInject.editarRegistroDeVacinacao(registroExistente, "1"));
-
-        // Verificando se a mensagem da exceção é a esperada
-        assertEquals("Erro ao editar o registro", exception.getMessage());
-
-        // Verificando se o serviço foi chamado corretamente
-        verify(registroDeVacinacaoService, times(1)).editarRegistroDeVacinacao(any(), eq("1"));
     }
 
     @Test
@@ -127,7 +109,7 @@ public class RegistroDeVacinacaoControllerTests {
         atualizacao.put("dataDeVacinacao", LocalDate.now());
 
         // Simulando uma chamada de edição parcial bem-sucedida
-        when(registroDeVacinacaoService.editarRegistroDeVacinacaoParcial(any(), any())).thenReturn(true);
+        when(registroDeVacinacaoService.editarRegistroDeVacinacaoParcial(any(), any())).thenReturn(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo());
 
         // Executando o método do controlador
         ResponseEntity responseEntity = registroDeVacinacaoControllerInject.editarRegistroDeVacinacaoParcial("1", atualizacao);
@@ -135,31 +117,12 @@ public class RegistroDeVacinacaoControllerTests {
         // Verificando se o status e a mensagem são os esperados
         assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON, responseEntity.getHeaders().getContentType());
-        assertEquals(new Mensagem("Registro editado com sucesso!"), responseEntity.getBody());
+        assertEquals(RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo(), responseEntity.getBody());
 
         // Verificando se o serviço foi chamado corretamente
         verify(registroDeVacinacaoService, times(1)).editarRegistroDeVacinacaoParcial(any(), any());
     }
 
-    @Test
-    void editarRegistroDeVacinacaoParcialFalhaAoEditarController() {
-        // Simulando um mapa de atualização
-        Map<String, Object> atualizacao = new HashMap<>();
-        atualizacao.put("dataDeVacinacao", LocalDate.now());
-
-        // Simulando uma chamada de edição parcial mal-sucedida
-        when(registroDeVacinacaoService.editarRegistroDeVacinacaoParcial(any(), any())).thenReturn(false);
-
-        // Executando o método do controlador e capturando a exceção
-        EditarException exception = assertThrows(EditarException.class,
-                () -> registroDeVacinacaoControllerInject.editarRegistroDeVacinacaoParcial("1", atualizacao));
-
-        // Verificando se a mensagem da exceção é a esperada
-        assertEquals("Erro ao editar o registro", exception.getMessage());
-
-        // Verificando se o serviço foi chamado corretamente
-        verify(registroDeVacinacaoService, times(1)).editarRegistroDeVacinacaoParcial(any(), any());
-    }
 
     @Test
     void apagarRegistroDeVacinacaoPorIdSucessoController() {
