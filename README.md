@@ -45,13 +45,17 @@ Antes de iniciar, certifique-se de que possui os seguintes requisitos:
 - [Postman ](https://www.postman.com/downloads/)
 - [Apache Maven](https://maven.apache.org/)
 
+## ⚠️ Observação Importante: API 3
+
+Atualmente, a API 3 está configurada para funcionar online, mas pode enfrentar dificuldades ao fazer buscas nas APIs 1 e 2 devido a questões de conectividade. Recomendamos que alguns testes sejam realizados localmente para garantir o correto funcionamento da integração entre as APIs.
+
 ##  Endpoint de Teste
 
 Para facilitar a verificação rápida da API, você pode usar o seguinte endpoint de teste:
 
 Endpoint: **GET** 
 ```bash
-https://wb-api-vacinas-v1.azurewebsites.net/sanhok
+https://wb-api-vacinas-v3.azurewebsites.net/sanhok
 ```
 Descrição: Retorna uma mensagem simples indicando que a API está em funcionamento.
 
@@ -81,7 +85,7 @@ API_REGISTROS_VACINACAO_URL=http://localhost:8082
 
 ```bash
 
-A API estará acessível em http://localhost:8080.
+A API estará acessível em http://localhost:8082.
 ```
 
 ###  ▶️ Uso
@@ -134,7 +138,7 @@ A API oferece vários endpoints para criar, ler, atualizar e excluir registros d
 - **GET /sanhok**: Retorna uma mensagem de boas-vindas personalizada para a API de Gerenciamento de Vacinação desenvolvida pela equipe Sanhok.
   - **Response**: Retorna a mensagem de boas-vindas com status 200 (OK) e tipo de conteúdo TEXT_PLAIN.
 
-- **GET /sanhok/inject**: Simula a injeção de dados para o registro de vacinação.
+- **POST /sanhok/inject**: Simula a injeção de dados para o registro de vacinação.
   - **Response**: Retorna a mensagem "Usuários injetados" com status 200 (OK) e tipo de conteúdo TEXT_PLAIN.
 
 #### [/pacientes](#pacientes)
