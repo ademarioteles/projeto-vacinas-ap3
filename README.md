@@ -138,7 +138,7 @@ A API oferece vários endpoints para criar, ler, atualizar e excluir registros d
 - **GET /sanhok**: Retorna uma mensagem de boas-vindas personalizada para a API de Gerenciamento de Vacinação desenvolvida pela equipe Sanhok.
   - **Response**: Retorna a mensagem de boas-vindas com status 200 (OK) e tipo de conteúdo TEXT_PLAIN.
 
-- **GET /sanhok/inject**: Simula a injeção de dados para o registro de vacinação.
+- **POST /sanhok/inject**: Simula a injeção de dados para o registro de vacinação.
   - **Response**: Retorna a mensagem "Usuários injetados" com status 200 (OK) e tipo de conteúdo TEXT_PLAIN.
 
 #### [/pacientes](#pacientes)
