@@ -1,5 +1,4 @@
-package com.vacinas.ap3.interfaces;
-import com.vacinas.ap3.DTO.Paciente;
+package com.vacinas.ap3.client;
 import com.vacinas.ap3.DTO.Vacina;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;

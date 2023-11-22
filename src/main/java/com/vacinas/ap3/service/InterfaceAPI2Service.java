@@ -1,7 +1,6 @@
 package com.vacinas.ap3.service;
 import com.vacinas.ap3.DTO.Paciente;
-import com.vacinas.ap3.interfaces.PacienteCliente;
-import feign.Response;
+import com.vacinas.ap3.client.PacienteCliente;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

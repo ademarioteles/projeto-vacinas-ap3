@@ -1,6 +1,5 @@
-package com.vacinas.ap3.interfaces;
+package com.vacinas.ap3.client;
 import com.vacinas.ap3.DTO.Paciente;
-import feign.Response;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

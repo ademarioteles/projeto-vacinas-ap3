@@ -1,6 +1,6 @@
 package com.vacinas.ap3.service;
 import com.vacinas.ap3.DTO.Vacina;
-import com.vacinas.ap3.interfaces.VacinaCliente;
+import com.vacinas.ap3.client.VacinaCliente;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
