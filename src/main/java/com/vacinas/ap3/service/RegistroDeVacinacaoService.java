@@ -289,7 +289,7 @@ public class RegistroDeVacinacaoService {
         } else {
             // Filtra pacientes pelo estado, se necessário
             return pacientesAtrasados.stream()
-                    .filter(paciente -> paciente.getEndereco().getEstado().equals(estado))
+                    .filter(paciente -> paciente.getEndereco().getEstado().toUpperCase().equals(estado.toUpperCase()))
                     .collect(Collectors.toList());
         }
     }
