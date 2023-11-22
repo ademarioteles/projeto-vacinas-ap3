@@ -239,7 +239,7 @@ public class RegistroDeVacinacaoService {
         if (estado != null) {
             List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao();
             long contagem = listaRegistros.stream()
-                    .filter(registro -> estado.equals(obterEstadoDoPaciente(registro.getIdentificacaoDoPaciente())))
+                    .filter(registro -> estado.toUpperCase().equals(obterEstadoDoPaciente(registro.getIdentificacaoDoPaciente())))
                     .count();
             return (int) contagem;
         } else {
@@ -249,7 +249,7 @@ public class RegistroDeVacinacaoService {
     //usa um metodo para buscar na api2 o paciente e busca o estado.
     public String obterEstadoDoPaciente(String id) {
         Paciente paciente = validarPacienteExistente(id);
-        return paciente.getEndereco().getEstado();
+        return paciente.getEndereco().getEstado().toUpperCase();
     }
     //busca no banco de dados todos os registros de vacinação de um paciente especifico
     public List<RegistroDeVacinacao> obterRegistroDeVacinacaoPorIdDoPaciente(String id) {
@@ -307,13 +307,13 @@ public class RegistroDeVacinacaoService {
                     vacinasUnicas.add(vacina);
                 }
             } else if (fabricantes != null && estado == null) {
-                if (vacina.getFabricante().equals(fabricantes)) {
+                if (vacina.getFabricante().toUpperCase().equals(fabricantes.toUpperCase())) {
                     if (!vacinasUnicas.contains(vacina)) {
                         vacinasUnicas.add(vacina);
                     }
                 }
             } else {
-                if (vacina.getFabricante().equals(fabricantes) && estadoPaciente.equals(estado)) {
+                if (vacina.getFabricante().equals(fabricantes) && estadoPaciente.equals(estado.toUpperCase())) {
                     if (!vacinasUnicas.contains(vacina)) {
                         vacinasUnicas.add(vacina);
                     }
