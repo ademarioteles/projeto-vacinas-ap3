@@ -30,7 +30,7 @@ public class RegistroDeVacinacaoController {
                 .body(registroDeVacinacaoService.criarRegistroDeVacinacao(registroDeVacinacao));
     }
 
-    @PostMapping("/editar/{id}")
+    @PutMapping("/editar/{id}")
     public ResponseEntity<RegistroDeVacinacao> editarRegistroDeVacinacao(@RequestBody @Valid RegistroDeVacinacao registroDeVacinacao, @PathVariable String id) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -44,7 +44,7 @@ public class RegistroDeVacinacaoController {
                 .body(registroDeVacinacaoService.editarRegistroDeVacinacaoParcial(id, atualizacao));
     }
 
-    @GetMapping("/apagar/{id}")
+    @DeleteMapping("/apagar/{id}")
     public ResponseEntity apagarRegistroDeVacinacaoPorId(@PathVariable String id) {
         if (registroDeVacinacaoService.apagarRegistro(id)) {
             return ResponseEntity.status(200).body("Resgistro apagado com sucesso");
