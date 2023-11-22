@@ -2,12 +2,9 @@ package com.vacinas.ap3;
 
 
 import com.vacinas.ap3.controller.RegistroDeVacinacaoController;
-import com.vacinas.ap3.entity.Mensagem;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.exceptions.EditarException;
 import com.vacinas.ap3.exceptions.RegistroInexistenteException;
-import com.vacinas.ap3.service.InterfaceAPI1Service;
-import com.vacinas.ap3.service.InterfaceAPI2Service;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
 import com.vacinas.ap3.util.RegistroDeVacinacaoUtils;
 import org.junit.jupiter.api.Assertions;

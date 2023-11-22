@@ -9,19 +9,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.List;
 
 @Service
-public class InterfaceAPI2Service {
-    private final PacienteCliente api2Client;
+public class ClientPacientesService {
+    private final PacienteCliente client;
 
     @Autowired
-    public InterfaceAPI2Service(PacienteCliente api2Client) {
-        this.api2Client = api2Client;
+    public ClientPacientesService(PacienteCliente client) {
+        this.client = client;
     }
     @ResponseBody
     public ResponseEntity <List<Paciente>> listarPacientesDaApi2() {
-        return api2Client.listarPacientes();
+        return client.listarPacientes();
     }
     @ResponseBody
     public ResponseEntity PacienteDaApi2(String id) {
-        return api2Client.Paciente(id);
+        return client.Paciente(id);
     }
 }

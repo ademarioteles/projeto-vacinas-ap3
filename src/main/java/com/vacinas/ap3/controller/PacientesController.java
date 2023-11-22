@@ -3,7 +3,7 @@ package com.vacinas.ap3.controller;
 import com.vacinas.ap3.DTO.Paciente;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
 import com.vacinas.ap3.exceptions.RegistroInexistenteException;
-import com.vacinas.ap3.service.InterfaceAPI2Service;
+import com.vacinas.ap3.service.ClientPacientesService;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,11 +14,11 @@ import java.util.List;
 @RequestMapping("/pacientes")
 public class PacientesController {
     RegistroDeVacinacaoService registroDeVacinacaoService;
-    private InterfaceAPI2Service interfaceAPI2Service;
+    private ClientPacientesService clientPacientesService;
 
-    public PacientesController(RegistroDeVacinacaoService registroDeVacinacaoService, InterfaceAPI2Service interfaceAPI2Service) {
+    public PacientesController(RegistroDeVacinacaoService registroDeVacinacaoService, ClientPacientesService clientPacientesService) {
         this.registroDeVacinacaoService = registroDeVacinacaoService;
-        this.interfaceAPI2Service = interfaceAPI2Service;
+        this.clientPacientesService = clientPacientesService;
     }
 
     @GetMapping("/{id}/vacinas")

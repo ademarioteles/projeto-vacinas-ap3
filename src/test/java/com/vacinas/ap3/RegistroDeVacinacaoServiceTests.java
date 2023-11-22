@@ -6,20 +6,17 @@ import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoDoses;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
-import com.vacinas.ap3.service.InterfaceAPI1Service;
-import com.vacinas.ap3.service.InterfaceAPI2Service;
+import com.vacinas.ap3.service.ClientVacinasService;
+import com.vacinas.ap3.service.ClientPacientesService;
 import com.vacinas.ap3.service.RegistroDeVacinacaoService;
 import com.vacinas.ap3.util.PacienteUtils;
 import com.vacinas.ap3.util.RegistroDeVacinacaoUtils;
 import com.vacinas.ap3.util.VacinaUtils;
 import feign.FeignException;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.HttpStatus;
@@ -39,9 +36,9 @@ import static org.mockito.Mockito.*;
 class RegistroDeVacinacaoServiceTests {
 
     @Mock
-    private InterfaceAPI2Service interfaceAPI2Service;
+    private ClientPacientesService clientPacientesService;
     @Mock
-    private InterfaceAPI1Service interfaceAPI1Service;
+    private ClientVacinasService clientVacinasService;
 
     @InjectMocks
     private RegistroDeVacinacaoService registroDeVacinacaoService;
@@ -52,7 +49,7 @@ class RegistroDeVacinacaoServiceTests {
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
-        registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, interfaceAPI2Service, interfaceAPI1Service);
+        registroDeVacinacaoService = new RegistroDeVacinacaoService(registroDeVacinacaoRepository, clientPacientesService, clientVacinasService);
     }
 
 
@@ -64,7 +61,7 @@ class RegistroDeVacinacaoServiceTests {
         Paciente pacienteRetorno = PacienteUtils.criarUmPaciente(); // Suponhamos que você tenha uma classe Paciente
 
         // Mock da resposta da chamada externa simulando um paciente encontrado
-        when(interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente))
+        when(clientPacientesService.PacienteDaApi2(identificacaoDoPaciente))
                 .thenReturn(ResponseEntity.ok(pacienteRetorno));
 
         Paciente paciente = registroDeVacinacaoService.validarPacienteExistente(identificacaoDoPaciente);
@@ -77,7 +74,7 @@ class RegistroDeVacinacaoServiceTests {
         String identificacaoDoPaciente = "identificacaoDoPaciente";
 
         // Mock da resposta da chamada externa simulando paciente não encontrado
-        when(interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente))
+        when(clientPacientesService.PacienteDaApi2(identificacaoDoPaciente))
                 .thenReturn(ResponseEntity.notFound().build());
 
         ExteriorException exception = assertThrows(ExteriorException.class, () -> {
@@ -92,7 +89,7 @@ class RegistroDeVacinacaoServiceTests {
         String identificacaoDoPaciente = "identificacaoDoPaciente";
 
         // Mock do lançamento de uma exceção na chamada externa
-        when(interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente))
+        when(clientPacientesService.PacienteDaApi2(identificacaoDoPaciente))
                 .thenThrow(FeignException.class);
 
         ExteriorException exception = assertThrows(ExteriorException.class, () -> {
@@ -107,7 +104,7 @@ class RegistroDeVacinacaoServiceTests {
     void testValidarVacinaExistente_VacinaEncontrada() {
         Vacina vacinaRetorno = new Vacina(); // Simulação de uma vacina
         // Mock da resposta da chamada externa simulando a vacina encontrada
-        when(interfaceAPI1Service.buscarVacinaDaApi1("identificacaoDaVacina"))
+        when(clientVacinasService.buscarVacina("identificacaoDaVacina"))
                 .thenReturn(ResponseEntity.ok(vacinaRetorno));
 
         Vacina vacina = registroDeVacinacaoService.validarVacinaExistente("identificacaoDaVacina");
@@ -118,7 +115,7 @@ class RegistroDeVacinacaoServiceTests {
     @Test
     void testValidarVacinaExistente_VacinaNaoEncontrada() {
         // Mock da resposta da chamada externa simulando vacina não encontrada
-        when(interfaceAPI1Service.buscarVacinaDaApi1("identificacaoDaVacina"))
+        when(clientVacinasService.buscarVacina("identificacaoDaVacina"))
                 .thenReturn(ResponseEntity.notFound().build());
 
         ExteriorException exception = assertThrows(ExteriorException.class, () -> {
@@ -131,7 +128,7 @@ class RegistroDeVacinacaoServiceTests {
     @Test
     void testValidarVacinaExistente_ErroNaChamada() {
         // Mock do lançamento de uma exceção na chamada externa
-        when(interfaceAPI1Service.buscarVacinaDaApi1("identificacaoDaVacina"))
+        when(clientVacinasService.buscarVacina("identificacaoDaVacina"))
                 .thenThrow(FeignException.class);
 
         ExteriorException exception = assertThrows(ExteriorException.class, () -> {
@@ -402,7 +399,7 @@ class RegistroDeVacinacaoServiceTests {
         Paciente pacienteRetorno = PacienteUtils.criarUmPaciente(); // Suponhamos que você tenha uma classe Paciente
 
         // Mock da resposta da chamada externa simulando um paciente encontrado
-        when(interfaceAPI2Service.PacienteDaApi2(identificacaoDoPaciente))
+        when(clientPacientesService.PacienteDaApi2(identificacaoDoPaciente))
                 .thenReturn(ResponseEntity.ok(pacienteRetorno));
 
         String estado = registroDeVacinacaoService.obterEstadoDoPaciente("1");
@@ -414,7 +411,7 @@ class RegistroDeVacinacaoServiceTests {
         // Configuração do mock com paciente não encontrado na API externa
         String idPaciente = "1";
         ResponseEntity<Paciente> responseEntity = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        when(interfaceAPI2Service.PacienteDaApi2(idPaciente)).thenReturn(responseEntity);
+        when(clientPacientesService.PacienteDaApi2(idPaciente)).thenReturn(responseEntity);
 
         assertThrows(ExteriorException.class, () -> registroDeVacinacaoService.obterEstadoDoPaciente("1"));
     }
@@ -428,14 +425,14 @@ class RegistroDeVacinacaoServiceTests {
         Paciente pacienteRetorno = PacienteUtils.criarUmPaciente(); // Suponhamos que você tenha uma classe Paciente
 
         // Mock da resposta da chamada externa simulando um paciente encontrado
-        when(interfaceAPI2Service.PacienteDaApi2("1"))
+        when(clientPacientesService.PacienteDaApi2("1"))
                 .thenReturn(ResponseEntity.ok(pacienteRetorno));
         // Criação da sua classe e injeção do repositório simulado
         when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
         // Simulando a resposta de busca da vacina
         Vacina vacina = VacinaUtils.criarVacinaExemplo();
         ResponseEntity<Vacina> responseEntityVacina = new ResponseEntity<>(vacina, HttpStatus.OK);
-        when(registroDeVacinacaoService.interfaceAPI1Service.buscarVacinaDaApi1("1")).thenReturn(responseEntityVacina);
+        when(registroDeVacinacaoService.clientVacinasService.buscarVacina("1")).thenReturn(responseEntityVacina);
 
 
         // Teste do método obterDosesAplicadas
@@ -453,14 +450,14 @@ class RegistroDeVacinacaoServiceTests {
         Paciente pacienteRetorno = PacienteUtils.criarOutroPaciente(); // Suponhamos que você tenha uma classe Paciente
 
         // Mock da resposta da chamada externa simulando um paciente encontrado
-        when(interfaceAPI2Service.PacienteDaApi2("2"))
+        when(clientPacientesService.PacienteDaApi2("2"))
                 .thenReturn(ResponseEntity.ok(pacienteRetorno));
         // Criação da sua classe e injeção do repositório simulado
         when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
         // Simulando a resposta de busca da vacina
         Vacina vacina = VacinaUtils.criarVacinaExemplo();
         ResponseEntity<Vacina> responseEntityVacina = new ResponseEntity<>(vacina, HttpStatus.OK);
-        when(registroDeVacinacaoService.interfaceAPI1Service.buscarVacinaDaApi1("1")).thenReturn(responseEntityVacina);
+        when(registroDeVacinacaoService.clientVacinasService.buscarVacina("1")).thenReturn(responseEntityVacina);
 
 
         // Teste do método obterDosesAplicadas
@@ -478,14 +475,14 @@ class RegistroDeVacinacaoServiceTests {
         Paciente pacienteRetorno = PacienteUtils.criarOutroPaciente(); // Suponhamos que você tenha uma classe Paciente
 
         // Mock da resposta da chamada externa simulando um paciente encontrado
-        when(interfaceAPI2Service.PacienteDaApi2("2"))
+        when(clientPacientesService.PacienteDaApi2("2"))
                 .thenReturn(ResponseEntity.ok(pacienteRetorno));
         // Criação da sua classe e injeção do repositório simulado
         when(registroDeVacinacaoRepository.findAll()).thenReturn(registros);
         // Simulando a resposta de busca da vacina
         Vacina vacina = VacinaUtils.criarVacinaExemplo();
         ResponseEntity<Vacina> responseEntityVacina = new ResponseEntity<>(vacina, HttpStatus.OK);
-        when(registroDeVacinacaoService.interfaceAPI1Service.buscarVacinaDaApi1("1")).thenReturn(responseEntityVacina);
+        when(registroDeVacinacaoService.clientVacinasService.buscarVacina("1")).thenReturn(responseEntityVacina);
 
 
         // Verifique se o resultado possui o tamanho esperado ou outra lógica
@@ -539,11 +536,11 @@ class RegistroDeVacinacaoServiceTests {
         RegistroDeVacinacao registroAtual = RegistroDeVacinacaoUtils.criarOutroRegistroDeVacinacaoExemplo();
 
         // Configuração do mock da API externa 1 (vacina)
-        when(interfaceAPI1Service.buscarVacinaDaApi1(registro.getIdentificacaoDaVacina()))
+        when(clientVacinasService.buscarVacina(registro.getIdentificacaoDaVacina()))
                 .thenReturn(ResponseEntity.ok(new Vacina()));
 
         // Configuração do mock da API externa 2 (paciente)
-        when(interfaceAPI2Service.PacienteDaApi2(registro.getIdentificacaoDoPaciente()))
+        when(clientPacientesService.PacienteDaApi2(registro.getIdentificacaoDoPaciente()))
                 .thenReturn(ResponseEntity.ok(new Paciente()));
 
         // Verificação de exceções ou sucesso
