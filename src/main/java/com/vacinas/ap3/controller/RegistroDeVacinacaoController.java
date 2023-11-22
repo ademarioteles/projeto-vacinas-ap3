@@ -23,12 +23,22 @@ public class RegistroDeVacinacaoController {
         this.registroDeVacinacaoService = registroDeVacinacaoService;
     }
 
-    @PostMapping("/cadastrar")
+    @PostMapping("")
     public ResponseEntity <RegistroDeVacinacao> criarRegistroDeVacinacao(@RequestBody @Valid RegistroDeVacinacao registroDeVacinacao) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(registroDeVacinacaoService.criarRegistroDeVacinacao(registroDeVacinacao));
     }
+
+    @GetMapping("")
+    public ResponseEntity<List<RegistroDeVacinacao>> obterListaRegistroDeVacinacao() {
+        if (!registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao().isEmpty()) {
+            return ResponseEntity.status(200).body(registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao());
+        } else {
+            throw new RegistroInexistenteException("Nenhum registro Encontrado");
+        }
+    }
+
 
     @PutMapping("/editar/{id}")
     public ResponseEntity<RegistroDeVacinacao> editarRegistroDeVacinacao(@RequestBody @Valid RegistroDeVacinacao registroDeVacinacao, @PathVariable String id) {
@@ -71,13 +81,5 @@ public class RegistroDeVacinacaoController {
         }
     }
 
-    @GetMapping("/lista")
-    public ResponseEntity<List<RegistroDeVacinacao>> obterListaRegistroDeVacinacao() {
-        if (!registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao().isEmpty()) {
-            return ResponseEntity.status(200).body(registroDeVacinacaoService.listarTodosOsRegistrosDeVacinacao());
-        } else {
-            throw new RegistroInexistenteException("Nenhum registro Encontrado");
-        }
-    }
 
 }
