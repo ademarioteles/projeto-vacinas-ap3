@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
 import java.time.LocalDate;
 
 @Document
@@ -16,13 +17,14 @@ import java.time.LocalDate;
 public class RegistroDeVacinacao {
     @Id
     private String id;
+    @Past(message = "A data de vacinação não pode ser no futuro.")
     @NotNull(message = "A data de vacinação não pode estar nulo.")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dataDeVacinacao;
-    @NotNull(message = "A Identificação do paciente não pode estar nulo.")
+
     @NotEmpty(message = "A Identificação do paciente não pode estar vazio.")
     private String identificacaoDoPaciente; // Pode ser o ID do paciente ou outro identificador único
-    @NotNull(message = "A Identificação da vacina não pode estar nulo.")
+
     @NotEmpty(message = "A Identificação da vacina não pode estar vazio.")
     private String identificacaoDaVacina; // Pode ser o ID da vacina ou outro identificador único
     @NotNull(message = "A Identificação da dose não pode estar nulo.")
