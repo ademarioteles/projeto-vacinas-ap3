@@ -42,7 +42,7 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
     protected ResponseEntity handleException(RegistroInexistenteException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
         LOGGER.info("Tratamentação de exceção RegistroInexistenteException: " + mensagem);
-        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(mensagem, HttpStatus.NOT_FOUND);
     }
     @ExceptionHandler(ErroCriacaoRegistro.class)
     protected ResponseEntity handleException(ErroCriacaoRegistro e) {
