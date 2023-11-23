@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/vacinas-aplicadas")
@@ -21,7 +22,7 @@ public class VacinasAplicadasController {
     }
 
     @GetMapping("/quantidade")
-    public ResponseEntity<Integer> obterQuantidadeDeVacinacao(@RequestParam(name = "estado", required = false) String estado) {
+    public ResponseEntity<Map<String, Object>> obterQuantidadeDeVacinacao(@RequestParam(name = "estado", required = false) String estado) {
         return ResponseEntity.status(200).body(registroDeVacinacaoService.obterNumeroDeVacinacao(estado));
     }
 

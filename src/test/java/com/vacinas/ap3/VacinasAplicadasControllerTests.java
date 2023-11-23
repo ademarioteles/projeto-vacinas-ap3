@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -35,24 +34,27 @@ public class VacinasAplicadasControllerTests {
 
     @Test
     void obterQuantidadeDeVacinacaoSemEstadoSucessoController() {
+        Map<String, Object> resposta = new HashMap<>();
         List<RegistroDeVacinacao> registrosMock = RegistroDeVacinacaoUtils.criarOutraListaRegistrosExemploP1();
+        resposta.put("O total de vacinas aplicadas é de", registrosMock.size());
 
-        when(registroDeVacinacaoService.obterNumeroDeVacinacao(null)).thenReturn(registrosMock.size());
+        when(registroDeVacinacaoService.obterNumeroDeVacinacao(null)).thenReturn(resposta);
 
-        ResponseEntity<Integer> respostaEsperada = ResponseEntity.status(200).body(3);
-        ResponseEntity<Integer> respostaReal = vacinasAplicadasControllerInject.obterQuantidadeDeVacinacao(null);
+        ResponseEntity<Map<String, Object>> respostaEsperada = ResponseEntity.status(200).body(resposta);
+        ResponseEntity<Map<String, Object>> respostaReal = vacinasAplicadasControllerInject.obterQuantidadeDeVacinacao(null);
 
         assertEquals(respostaEsperada, respostaReal);
     }
 
     @Test
     void obterQuantidadeDeVacinacaoComEstadoSucessoController() {
+        Map<String, Object> resposta = new HashMap<>();
         List<RegistroDeVacinacao> registrosMock = RegistroDeVacinacaoUtils.criarOutraListaRegistrosExemploP1();
+        resposta.put("O total de vacinas aplicadas é de", registrosMock.size());
+        when(registroDeVacinacaoService.obterNumeroDeVacinacao("SP")).thenReturn(resposta);
 
-        when(registroDeVacinacaoService.obterNumeroDeVacinacao("SP")).thenReturn(registrosMock.size());
-
-        ResponseEntity<Integer> respostaEsperada = ResponseEntity.status(200).body(3);
-        ResponseEntity<Integer> respostaReal = vacinasAplicadasControllerInject.obterQuantidadeDeVacinacao("SP");
+        ResponseEntity<Map<String, Object>> respostaEsperada = ResponseEntity.status(200).body(resposta);
+        ResponseEntity<Map<String, Object>> respostaReal = vacinasAplicadasControllerInject.obterQuantidadeDeVacinacao("SP");
 
         assertEquals(respostaEsperada, respostaReal);
     }

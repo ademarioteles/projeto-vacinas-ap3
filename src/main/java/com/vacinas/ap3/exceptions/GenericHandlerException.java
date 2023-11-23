@@ -111,6 +111,12 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
         LOGGER.info("Tratamentação de exceção ChaveInvalidaException: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(EstadoInvalidoException.class)
+    protected ResponseEntity handleException(EstadoInvalidoException e) {
+        Mensagem mensagem = new Mensagem(e.getMessage());
+        LOGGER.info("Tratamentação de exceção ChaveInvalidaException: " + mensagem);
+        return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
+    }
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         List<Mensagem> message = new ArrayList<>();
@@ -128,4 +134,5 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new Mensagem(errorMessage));
     }
+
 }

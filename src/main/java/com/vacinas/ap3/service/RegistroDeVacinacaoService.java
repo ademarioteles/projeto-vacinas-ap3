@@ -7,6 +7,7 @@ import com.vacinas.ap3.entity.ProfissionalDeSaude;
 import com.vacinas.ap3.entity.RegistroDeVacinacao;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoDoses;
 import com.vacinas.ap3.entity.RegistroDeVacinacaoResumido;
+import com.vacinas.ap3.enums.Estados;
 import com.vacinas.ap3.exceptions.*;
 import com.vacinas.ap3.repository.RegistroDeVacinacaoRepository;
 import com.vacinas.ap3.util.RegistroDeVacinacaoUtils;
@@ -253,16 +254,20 @@ public class RegistroDeVacinacaoService {
     }
 
     //retorna o total de vacinações gerais ou por estado
-    public Integer obterNumeroDeVacinacao(String estado) {
+    public Map<String, Object> obterNumeroDeVacinacao(String estado) {
+        Map<String, Object> resposta = new HashMap<>();
+        validarEstado(estado);
+        int resultado = 0;
         if (estado != null) {
             List<RegistroDeVacinacao> listaRegistros = listarTodosOsRegistrosDeVacinacao();
             long contagem = listaRegistros.stream()
                     .filter(registro -> estado.toUpperCase().equals(obterEstadoDoPaciente(registro.getIdentificacaoDoPaciente())))
                     .count();
-            return (int) contagem;
-        } else {
-            return listarTodosOsRegistrosDeVacinacao().size();
+            resultado = (int) contagem;
         }
+        resultado = listarTodosOsRegistrosDeVacinacao().size();
+        resposta.put("O total de vacinas aplicadas é de", resultado);
+            return  resposta;
     }
 
     //usa um metodo para buscar na api2 o paciente e busca o estado.
@@ -318,6 +323,7 @@ public class RegistroDeVacinacaoService {
     /*retorna uma lista com registros de vacinação dose com base,
     resumo com fabricante, vacinas e doses aplicadas, filtradas por estado e/ou fabricante*/
     public List<RegistroDeVacinacaoDoses> obterDosesAplicadas(String estado, String fabricantes) {
+        validarEstado(estado);
         List<Vacina> vacinasUnicas = new ArrayList<>();
         List<RegistroDeVacinacaoDoses> registroDeVacinacaoDoses = new ArrayList<>();
         List<RegistroDeVacinacao> registros = listarTodosOsRegistrosDeVacinacao();
@@ -459,6 +465,16 @@ public class RegistroDeVacinacaoService {
         registroDeVacinacaoRepository.save(registroEditado);
     }
 
+    public Boolean validarEstado(String estado) {
+        estado = estado.toUpperCase(); // Converte para maiúsculas
+        for (Estados e : Estados.values()) {
+            if (e.name().equals(estado)) {
+                return true; // Encontrou um estado válido
+            }
+        }
+        throw new EstadoInvalidoException("Estado Invalido");
+    }
+
     //injeta dados no banco para testes
     public void injetarDados() {
         List<RegistroDeVacinacao> registrosInject = RegistroDeVacinacaoUtils.injectDados();
@@ -466,5 +482,6 @@ public class RegistroDeVacinacaoService {
             registroDeVacinacaoRepository.save(registro);
         }
     }
+
 
 }
