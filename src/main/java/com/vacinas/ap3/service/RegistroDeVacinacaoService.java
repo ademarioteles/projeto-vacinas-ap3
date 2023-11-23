@@ -182,7 +182,7 @@ public class RegistroDeVacinacaoService {
         validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
         List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
         validarDose(registroDeVacinacao, registros);
-        registroDeVacinacaoRepository.save(registroDeVacinacao);
+        registroDeVacinacaoRepository.insert(registroDeVacinacao);
         LOGGER.info("Registro de vacinação criado" + registroDeVacinacao);
         return registroDeVacinacao;
     }
@@ -264,8 +264,9 @@ public class RegistroDeVacinacaoService {
                     .filter(registro -> estado.toUpperCase().equals(obterEstadoDoPaciente(registro.getIdentificacaoDoPaciente())))
                     .count();
             resultado = (int) contagem;
+        }else {
+            resultado = listarTodosOsRegistrosDeVacinacao().size();
         }
-        resultado = listarTodosOsRegistrosDeVacinacao().size();
         resposta.put("O total de vacinas aplicadas é de", resultado);
             return  resposta;
     }
@@ -323,7 +324,9 @@ public class RegistroDeVacinacaoService {
     /*retorna uma lista com registros de vacinação dose com base,
     resumo com fabricante, vacinas e doses aplicadas, filtradas por estado e/ou fabricante*/
     public List<RegistroDeVacinacaoDoses> obterDosesAplicadas(String estado, String fabricantes) {
-        validarEstado(estado);
+        if (estado != null){
+            validarEstado(estado);
+        }
         List<Vacina> vacinasUnicas = new ArrayList<>();
         List<RegistroDeVacinacaoDoses> registroDeVacinacaoDoses = new ArrayList<>();
         List<RegistroDeVacinacao> registros = listarTodosOsRegistrosDeVacinacao();
@@ -377,6 +380,17 @@ public class RegistroDeVacinacaoService {
         } else {
             throw new ApagarException("Só é possivel apagar o ultimo registro de vacinação");
         }
+    }
+
+    //Valida se o estado é valido
+    public Boolean validarEstado(String estado) {
+        estado = estado.toUpperCase(); // Converte para maiúsculas
+        for (Estados e : Estados.values()) {
+            if (e.name().equals(estado)) {
+                return true; // Encontrou um estado válido
+            }
+        }
+        throw new EstadoInvalidoException("Estado Invalido");
     }
 
     // edita um registro de vacinação existente
@@ -449,7 +463,6 @@ public class RegistroDeVacinacaoService {
         validarPacienteExistente(registroDeVacinacao.getIdentificacaoDoPaciente());
         validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
         List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
-        validarDose(registroDeVacinacao, registros);
     }
 
     //altera o id do objeto gerado para o id do objeto a ser editado
@@ -463,16 +476,6 @@ public class RegistroDeVacinacaoService {
     public void salvarRegistroEditado(RegistroDeVacinacao registroEditado) {
         LOGGER.info("Registro de vacinação editado. " + registroEditado);
         registroDeVacinacaoRepository.save(registroEditado);
-    }
-
-    public Boolean validarEstado(String estado) {
-        estado = estado.toUpperCase(); // Converte para maiúsculas
-        for (Estados e : Estados.values()) {
-            if (e.name().equals(estado)) {
-                return true; // Encontrou um estado válido
-            }
-        }
-        throw new EstadoInvalidoException("Estado Invalido");
     }
 
     //injeta dados no banco para testes

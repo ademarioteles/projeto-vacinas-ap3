@@ -114,7 +114,7 @@ public class GenericHandlerException extends ResponseEntityExceptionHandler {
     @ExceptionHandler(EstadoInvalidoException.class)
     protected ResponseEntity handleException(EstadoInvalidoException e) {
         Mensagem mensagem = new Mensagem(e.getMessage());
-        LOGGER.info("Tratamentação de exceção ChaveInvalidaException: " + mensagem);
+        LOGGER.info("Tratamentação de exceção EstadoInvalidoException: " + mensagem);
         return new ResponseEntity(mensagem, HttpStatus.BAD_REQUEST);
     }
     @Override
