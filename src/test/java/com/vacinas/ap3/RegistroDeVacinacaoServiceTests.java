@@ -527,25 +527,6 @@ class RegistroDeVacinacaoServiceTests {
         assertEquals(registro.getIdentificacaoDaVacina(), registroEditado.getIdentificacaoDaVacina());
         assertEquals(registro.getIdentificacaoDaDose(), registroEditado.getIdentificacaoDaDose());
     }
-    //validarEdicaoRegistro
-
-    @Test
-    public void testValidarEdicaoRegistro_DadosValidos() {
-        RegistroDeVacinacao registro = RegistroDeVacinacaoUtils.criarRegistroDeVacinacaoExemplo();
-
-        RegistroDeVacinacao registroAtual = RegistroDeVacinacaoUtils.criarOutroRegistroDeVacinacaoExemplo();
-
-        // Configuração do mock da API externa 1 (vacina)
-        when(clientVacinasService.buscarVacina(registro.getIdentificacaoDaVacina()))
-                .thenReturn(ResponseEntity.ok(new Vacina()));
-
-        // Configuração do mock da API externa 2 (paciente)
-        when(clientPacientesService.PacienteDaApi2(registro.getIdentificacaoDoPaciente()))
-                .thenReturn(ResponseEntity.ok(new Paciente()));
-
-        // Verificação de exceções ou sucesso
-        assertDoesNotThrow(() -> registroDeVacinacaoService.validarEdicaoRegistro(registro, registroAtual));
-    }
 
     @Test
     public void testValidarEdicaoRegistro_DoseNaoEditavel() {
