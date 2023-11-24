@@ -24,7 +24,7 @@ Esta é uma API de Gerenciamento de Vacinação desenvolvida pela equipe Sanhok 
 - [Referências](#referências)
 
   
-##  📝  Visão Geral  {#visão-geral}
+##  📝  Visão Geral
 
 A API é projetada para fornecer as seguintes funcionalidades:
 
@@ -213,7 +213,7 @@ Se desejar contribuir para o desenvolvimento deste projeto, siga estas etapas:
 - Taysa Barbosa  - [GitHub](https://github.com/taysa-barbosa)
 
 
-## 📚 Referências
+## 📚 Referências{#referencias}
 
 - https://www.java.com/pt-BR
 - https://www.mongodb.com/products/tools/compass
