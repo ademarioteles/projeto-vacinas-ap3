@@ -24,7 +24,7 @@ Esta é uma API de Gerenciamento de Vacinação desenvolvida pela equipe Sanhok 
 - [Referências](#referências)
 
   
-##  📝  Visão Geral
+##  📝  [Visão Geral](#visão-geral)
 
 A API é projetada para fornecer as seguintes funcionalidades:
 
