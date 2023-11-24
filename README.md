@@ -213,7 +213,7 @@ Se desejar contribuir para o desenvolvimento deste projeto, siga estas etapas:
 - Taysa Barbosa  - [GitHub](https://github.com/taysa-barbosa)
 
 
-## 📚 Referências {#referencias}
+## 📚 Referências
 
 - https://www.java.com/pt-BR
 - https://www.mongodb.com/products/tools/compass
