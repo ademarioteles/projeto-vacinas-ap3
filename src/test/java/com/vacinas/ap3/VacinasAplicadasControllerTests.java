@@ -36,7 +36,7 @@ public class VacinasAplicadasControllerTests {
     void obterQuantidadeDeVacinacaoSemEstadoSucessoController() {
         Map<String, Object> resposta = new HashMap<>();
         List<RegistroDeVacinacao> registrosMock = RegistroDeVacinacaoUtils.criarOutraListaRegistrosExemploP1();
-        resposta.put("O total de vacinas aplicadas é de", registrosMock.size());
+        resposta.put("Total de vacinas aplicadas", registrosMock.size());
 
         when(registroDeVacinacaoService.obterNumeroDeVacinacao(null)).thenReturn(resposta);
 
@@ -50,7 +50,7 @@ public class VacinasAplicadasControllerTests {
     void obterQuantidadeDeVacinacaoComEstadoSucessoController() {
         Map<String, Object> resposta = new HashMap<>();
         List<RegistroDeVacinacao> registrosMock = RegistroDeVacinacaoUtils.criarOutraListaRegistrosExemploP1();
-        resposta.put("O total de vacinas aplicadas é de", registrosMock.size());
+        resposta.put("Total de vacinas aplicadas", registrosMock.size());
         when(registroDeVacinacaoService.obterNumeroDeVacinacao("SP")).thenReturn(resposta);
 
         ResponseEntity<Map<String, Object>> respostaEsperada = ResponseEntity.status(200).body(resposta);

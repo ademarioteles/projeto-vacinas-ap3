@@ -267,7 +267,7 @@ public class RegistroDeVacinacaoService {
         }else {
             resultado = listarTodosOsRegistrosDeVacinacao().size();
         }
-        resposta.put("O total de vacinas aplicadas é de", resultado);
+        resposta.put("Total de vacinas aplicadas", resultado);
             return  resposta;
     }
 
@@ -396,9 +396,9 @@ public class RegistroDeVacinacaoService {
     // edita um registro de vacinação existente
     public RegistroDeVacinacao editarRegistroDeVacinacao(RegistroDeVacinacao registroDeVacinacao, String id) {
         if (confirmacaoUltimaDose(id)) {
-            RegistroDeVacinacao registroAtual = obterRegistroDeVacinacaoPorId(id);
-            validarEdicaoRegistro(registroDeVacinacao, registroAtual);
             RegistroDeVacinacao registroEditado = criarRegistroEditado(registroDeVacinacao, id);
+            RegistroDeVacinacao registroAtual = obterRegistroDeVacinacaoPorId(id);
+            validarEdicaoRegistro(registroEditado, registroAtual);
             salvarRegistroEditado(registroEditado);
             return registroEditado;
         } else {
@@ -463,6 +463,8 @@ public class RegistroDeVacinacaoService {
         validarPacienteExistente(registroDeVacinacao.getIdentificacaoDoPaciente());
         validarVacinaExistente(registroDeVacinacao.getIdentificacaoDaVacina());
         List<RegistroDeVacinacao> registros = obterRegistroDeVacinacaoPorIdDoPaciente(registroDeVacinacao.getIdentificacaoDoPaciente());
+
+        validarDoseEditado(registroDeVacinacao, registros);
     }
 
     //altera o id do objeto gerado para o id do objeto a ser editado
@@ -476,6 +478,25 @@ public class RegistroDeVacinacaoService {
     public void salvarRegistroEditado(RegistroDeVacinacao registroEditado) {
         LOGGER.info("Registro de vacinação editado. " + registroEditado);
         registroDeVacinacaoRepository.save(registroEditado);
+    }
+    private void validarDoseEditado(RegistroDeVacinacao registro, List<RegistroDeVacinacao> registros) {
+        RegistroDeVacinacao registroAnterior = obterRegistroDeVacinacaoPorId(registro.getId());
+        Vacina vacinaAplicada = validarVacinaExistente(registro.getIdentificacaoDaVacina());
+        Paciente paciente = validarPacienteExistente(registro.getIdentificacaoDoPaciente());
+        LocalDate dataUltimaDose = obterDataUltimaDose(registros);
+        LocalDate dataRegistroAtual = registro.getDataDeVacinacao();
+        validarNumeroDoses(vacinaAplicada, registro.getIdentificacaoDaDose());
+
+        if (registro.getIdentificacaoDoPaciente().equals(registroAnterior.getIdentificacaoDoPaciente()) &&
+                !registro.getDataDeVacinacao().isEqual(registroAnterior.getDataDeVacinacao())) {
+            validarIntervaloDoses(dataUltimaDose, dataRegistroAtual, vacinaAplicada, paciente);
+        }
+        if (!registro.getIdentificacaoDoPaciente().equals(registroAnterior.getIdentificacaoDoPaciente())){
+            validarOrdemDose(registro, registros);
+        }
+        if (registro.getIdentificacaoDaDose() != 1) {
+            validarVacinaIncompativel(registro, registros);
+        }
     }
 
     //injeta dados no banco para testes
